@@ -1,0 +1,66 @@
+.container {
+  width: min(
+    1100px,
+    calc(100% - 2rem)
+  ); /* max width with side breathing room */
+  margin: 0 auto; /* center container */
+}
+
+.narrow {
+  width: min(760px, 100%); /* used for narrower text blocks */
+}
+
+.section,
+.page-hero,
+.hero,
+.cta-section {
+  padding: 4rem 0; /* shared vertical spacing for major sections */
+}
+
+.alt-section {
+  background: #f7f9fb; /* soft contrast for alternating sections */
+}
+
+.two-col-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 equal columns */
+  gap: 1.5rem;
+}
+
+/* Shared grid setups */
+.three-col-grid,
+.pricing-grid,
+.footer-grid,
+.contact-grid,
+.hero-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.hero-grid {
+  grid-template-columns: 1.3fr 1fr; /* text gets a little more room than the side card */
+  align-items: center;
+}
+
+.three-col-grid,
+.pricing-grid,
+.footer-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.contact-grid {
+  grid-template-columns: 1fr 1fr; /* left intro, right form */
+  align-items: start;
+}
+
+/* Responsive collapse for tablet/mobile */
+@media (max-width: 900px) {
+  .hero-grid,
+  .three-col-grid,
+  .pricing-grid,
+  .footer-grid,
+  .contact-grid,
+  .two-col-grid {
+    grid-template-columns: 1fr;
+  }
+}

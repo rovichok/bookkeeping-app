@@ -1,0 +1,43 @@
+import Button from "../ui/Button";
+
+export default function Hero() {
+  return (
+    <section className="hero">
+      <div className="container hero-grid">
+        {/* Left side: main marketing message */}
+        <div>
+          <p className="eyebrow">Cleanup + Ongoing Support</p>
+
+          <h1>
+            Behind on your books? We’ll clean them up and keep them that way.
+          </h1>
+
+          <p className="hero-text">
+            Lentis helps small businesses fix messy bookkeeping, stay organized,
+            and gain clarity in their finances without the stress.
+          </p>
+
+          {/* Main CTA buttons */}
+          <div className="hero-actions">
+            <Button to="/contact">Get a Free Consultation</Button>
+            <Button to="/services/cleanup" variant="secondary">
+              Explore Services
+            </Button>
+          </div>
+        </div>
+
+        {/* Right side: visual support card instead of an image for now */}
+        <div className="hero-card">
+          <div className="placeholder-card">
+            <h3>What Lentis helps with</h3>
+            <ul>
+              <li>Cleanup and catch-up bookkeeping</li>
+              <li>Monthly reconciliation and reporting</li>
+              <li>QuickBooks setup and troubleshooting</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

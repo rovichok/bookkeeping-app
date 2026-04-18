@@ -1,0 +1,181 @@
+.site-header {
+  position: sticky; /* keeps navbar visible when scrolling */
+  top: 0;
+  z-index: 10;
+  background: #ffffff;
+  border-bottom: 1px solid #e7ebef;
+}
+
+.nav-grid {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 72px;
+  gap: 1rem;
+}
+
+.logo {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.nav-links {
+  display: flex;
+  flex-wrap: wrap; /* lets nav wrap instead of breaking on smaller widths */
+  gap: 1rem;
+  align-items: center;
+}
+
+.nav-links a.active {
+  font-weight: 700; /* active route stands out */
+}
+
+.nav-cta {
+  padding: 0.65rem 1rem;
+  border: 1px solid #17202a;
+  border-radius: 999px;
+}
+
+.section-header {
+  max-width: 720px;
+  margin-bottom: 2rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #2f6f62;
+}
+
+.section-header h2,
+.hero h1 {
+  margin: 0 0 1rem;
+  line-height: 1.15;
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3.7rem); /* responsive heading size */
+}
+
+.section-text,
+.hero-text {
+  font-size: 1.05rem;
+  color: #4a5560;
+}
+
+.hero-actions,
+.cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0.8rem 1.2rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-weight: 700;
+}
+
+.btn-primary {
+  background: #17202a;
+  color: #ffffff;
+}
+
+.btn-secondary {
+  background: transparent;
+  border-color: #17202a;
+  color: #17202a;
+}
+
+.card,
+.pricing-card,
+.placeholder-card,
+.cta-box,
+.contact-form {
+  background: #ffffff;
+  border: 1px solid #e7ebef;
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+
+.hero-card {
+  display: flex;
+}
+
+.placeholder-card {
+  width: 100%;
+  background: #f7f9fb;
+}
+
+.text-link {
+  display: inline-block;
+  margin-top: 0.75rem;
+  font-weight: 700;
+}
+
+.price {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0.5rem 0 1rem;
+}
+
+.price span {
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.featured {
+  border-width: 2px; /* make middle pricing tier stand out */
+}
+
+.contact-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.contact-form label {
+  display: grid;
+  gap: 0.45rem;
+  font-weight: 600;
+}
+
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 1px solid #cfd8df;
+  border-radius: 12px;
+}
+
+.cta-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: #f7f9fb;
+}
+
+.site-footer {
+  padding: 3rem 0;
+  border-top: 1px solid #e7ebef;
+}
+
+.footer-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-list li + li {
+  margin-top: 0.5rem;
+}

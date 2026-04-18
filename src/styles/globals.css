@@ -1,0 +1,39 @@
+/* Apply box-sizing so padding and border are included in width/height calculations */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Smooth scrolling when jumping to anchors later */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0; /* remove browser default spacing */
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.6;
+  color: #17202a;
+  background: #ffffff;
+}
+
+a {
+  color: inherit; /* links inherit text color unless styled otherwise */
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%; /* images never overflow parent width */
+  display: block;
+}
+
+ul {
+  padding-left: 1.2rem;
+}
+
+input,
+textarea,
+button {
+  font: inherit; /* form controls use same font as the site */
+}
