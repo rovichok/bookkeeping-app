@@ -15,9 +15,9 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="section">
+      <section className="pricing-page lentis-fade-up">
         <div className="container pricing-grid">
-          <article className="pricing-card">
+          <article className="pricing-card lentis-soft-card">
             <h3>Starter</h3>
             <p className="price">
               $250<span>/month</span>
@@ -31,7 +31,7 @@ export default function PricingPage() {
           </article>
 
           {/* featured class can be styled to stand out more */}
-          <article className="pricing-card featured">
+          <article className="pricing-card featured lentis-soft-card">
             <h3>Growth</h3>
             <p className="price">
               $400–$600<span>/month</span>
@@ -44,7 +44,7 @@ export default function PricingPage() {
             </ul>
           </article>
 
-          <article className="pricing-card">
+          <article className="pricing-card lentis-soft-card">
             <h3>Advanced</h3>
             <p className="price">
               $600–$900+<span>/month</span>
@@ -60,7 +60,7 @@ export default function PricingPage() {
 
         {/* Separate callout for cleanup pricing since it is project-based */}
         <div className="container narrow cleanup-note">
-          <div className="pricing-card">
+          <div className="pricing-card lentis-soft-card">
             <h3>Cleanup / Catch-Up</h3>
             <p className="price">
               $300–$1,500+<span> custom project pricing</span>

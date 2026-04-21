@@ -19,8 +19,14 @@ export default function Hero() {
 
           {/* Main CTA buttons */}
           <div className="hero-actions">
-            <Button to="/contact">Get a Free Consultation</Button>
-            <Button to="/services/cleanup" variant="secondary">
+            <Button className="primary-btn lentis-hover-lift" to="/contact">
+              Get a Free Consultation
+            </Button>
+            <Button
+              className="primary-btn lentis-hover-lift"
+              to="/services/cleanup"
+              variant="secondary"
+            >
               Explore Services
             </Button>
           </div>
@@ -28,7 +34,7 @@ export default function Hero() {
 
         {/* Right side: visual support card instead of an image for now */}
         <div className="hero-card">
-          <div className="placeholder-card">
+          <div className="placeholder-card lentis-soft-card lentis-fade-up">
             <h3>What Lentis helps with</h3>
             <ul>
               <li>Cleanup and catch-up bookkeeping</li>

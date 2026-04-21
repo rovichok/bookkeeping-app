@@ -11,7 +11,7 @@ export default function ProcessSection() {
         />
 
         <div className="three-col-grid">
-          <article className="card">
+          <article className="card lentis-soft-card">
             <h3>1. Consultation</h3>
             <p>
               We review your bookkeeping situation and identify the biggest
@@ -19,7 +19,7 @@ export default function ProcessSection() {
             </p>
           </article>
 
-          <article className="card">
+          <article className="card lentis-soft-card">
             <h3>2. Cleanup or setup</h3>
             <p>
               We organize the books, correct errors, and create a cleaner
@@ -27,7 +27,7 @@ export default function ProcessSection() {
             </p>
           </article>
 
-          <article className="card">
+          <article className="card lentis-soft-card">
             <h3>3. Ongoing support</h3>
             <p>We keep your bookkeeping accurate and current moving forward.</p>
           </article>

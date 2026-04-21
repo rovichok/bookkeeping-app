@@ -1,13 +1,14 @@
 import { Outlet } from "react-router-dom";
 import Layout from "./components/layout/Layout";
+import ScrollToTop from "./components/ScrollToTop";
 
-// App is the route shell.
-// Layout is shared across all pages.
-// Outlet is where the currently matched page gets inserted.
 export default function App() {
   return (
-    <Layout>
-      <Outlet />
-    </Layout>
+    <>
+      <ScrollToTop />
+      <Layout>
+        <Outlet />
+      </Layout>
+    </>
   );
 }
