@@ -12,7 +12,7 @@ export default function ServicesPreview() {
         />
 
         <div className="three-col-grid">
-          <article className="card">
+          <article className="card lentis-soft-card">
             <h3>Bookkeeping Cleanup</h3>
             <p>
               Fix disorganized or inaccurate books and bring your records back
@@ -20,29 +20,38 @@ export default function ServicesPreview() {
             </p>
 
             {/* Text link to the detailed service page */}
-            <Link to="/services/cleanup" className="text-link">
+            <Link
+              to="/services/cleanup"
+              className="text-link lentis-link-underline"
+            >
               Learn more
             </Link>
           </article>
 
-          <article className="card">
+          <article className="card lentis-soft-card">
             <h3>Monthly Bookkeeping</h3>
             <p>
               Reliable month-to-month support to keep your finances accurate and
               current.
             </p>
-            <Link to="/services/monthly-bookkeeping" className="text-link">
+            <Link
+              to="/services/monthly-bookkeeping"
+              className="text-link lentis-link-underline"
+            >
               Learn more
             </Link>
           </article>
 
-          <article className="card">
+          <article className="card lentis-soft-card">
             <h3>QuickBooks Support</h3>
             <p>
               Get help with setup, correction, workflow issues, and best
               practices.
             </p>
-            <Link to="/services/quickbooks-support" className="text-link">
+            <Link
+              to="/services/quickbooks-support"
+              className="text-link lentis-link-underline"
+            >
               Learn more
             </Link>
           </article>

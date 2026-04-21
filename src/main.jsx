@@ -9,6 +9,7 @@ import "./styles/globals.css";
 import "./styles/layout.css";
 import "./styles/components.css";
 import "./styles/pages.css";
+import "./index.css";
 
 // ReactDOM.createRoot connects React to the <div id="root"></div> in index.html.
 // Everything in the app starts rendering from here.

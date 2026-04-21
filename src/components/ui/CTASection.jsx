@@ -5,15 +5,21 @@ import Button from "./Button";
 export default function CTASection() {
   return (
     <section className="cta-section">
-      <div className="container cta-box">
+      <div className="container cta-box lentis-soft-card">
         <div>
           <h2>Stop worrying about your books.</h2>
           <p>Get clear, organized financial records and ongoing support.</p>
         </div>
 
         <div className="cta-actions">
-          <Button to="/contact">Get Started</Button>
-          <Button to="/pricing" variant="secondary">
+          <Button className="lentis-hover-lift" to="/contact">
+            Get Started
+          </Button>
+          <Button
+            className="lentis-hover-lift"
+            to="/pricing"
+            variant="secondary"
+          >
             View Pricing
           </Button>
         </div>
