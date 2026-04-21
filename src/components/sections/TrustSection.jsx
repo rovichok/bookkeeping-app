@@ -12,19 +12,19 @@ export default function TrustSection() {
 
         {/* 3-column value explanation area */}
         <div className="three-col-grid">
-          <article className="card">
+          <article className="card lentis-soft-card">
             <h3>Accurate records</h3>
             <p>Books that are organized, reviewed, and easier to trust.</p>
           </article>
 
-          <article className="card">
+          <article className="card lentis-soft-card">
             <h3>Less stress</h3>
             <p>
               Stop worrying about whether your bookkeeping is wrong or behind.
             </p>
           </article>
 
-          <article className="card">
+          <article className="card lentis-soft-card">
             <h3>Clear visibility</h3>
             <p>
               Understand your numbers so you can make better business decisions.
