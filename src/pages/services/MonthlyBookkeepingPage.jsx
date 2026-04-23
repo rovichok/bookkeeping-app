@@ -160,7 +160,14 @@ export default function MonthlyBookkeepingPage() {
       </section>
 
       {/* FINAL CTA */}
-      <CTASection />
+      <CTASection
+        title="Need bookkeeping support you can rely on every month?"
+        text="Let’s talk about the right level of monthly support for your business."
+        primaryText="Get Started"
+        primaryTo="/contact"
+        secondaryText="View Pricing"
+        secondaryTo="/pricing"
+      />
     </>
   );
 }

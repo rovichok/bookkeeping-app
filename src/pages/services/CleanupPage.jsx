@@ -147,7 +147,14 @@ export default function CleanupPage() {
       </section>
 
       {/* FINAL CTA */}
-      <CTASection />
+      <CTASection
+        title="Ready to get your books back under control?"
+        text="Start with a consultation and find out what cleanup support would look like for your business."
+        primaryText="Get Started"
+        primaryTo="/contact"
+        secondaryText="View Pricing"
+        secondaryTo="/pricing"
+      />
     </>
   );
 }
