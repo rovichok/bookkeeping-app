@@ -152,8 +152,8 @@ export default function CleanupPage() {
         text="Start with a consultation and find out what cleanup support would look like for your business."
         primaryText="Get Started"
         primaryTo="/contact"
-        secondaryText="View Pricing"
-        secondaryTo="/pricing"
+        secondaryText="Explore Monthly Support"
+        secondaryTo="/services/monthly-bookkeeping"
       />
     </>
   );

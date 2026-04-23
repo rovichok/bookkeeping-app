@@ -165,8 +165,8 @@ export default function MonthlyBookkeepingPage() {
         text="Let’s talk about the right level of monthly support for your business."
         primaryText="Get Started"
         primaryTo="/contact"
-        secondaryText="View Pricing"
-        secondaryTo="/pricing"
+        secondaryText="Start with Cleanup"
+        secondaryTo="/services/cleanup"
       />
     </>
   );
