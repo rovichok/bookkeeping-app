@@ -1,6 +1,6 @@
-import SectionHeader from "../components/ui/SectionHeader";
-import CTASection from "../components/ui/CTASection";
-import Button from "../components/ui/Button";
+import SectionHeader from "../../components/ui/SectionHeader";
+import CTASection from "../../components/ui/CTASection";
+import Button from "../../components/ui/Button";
 
 export default function CleanupPage() {
   return (
