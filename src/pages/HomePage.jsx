@@ -13,7 +13,14 @@ export default function HomePage() {
       <TrustSection />
       <ServicesPreview />
       <ProcessSection />
-      <CTASection />
+      <CTASection
+        title="Ready to stop stressing about your bookkeeping?"
+        text="Get organized books, clearer financial records, and support that helps you stay on track."
+        primaryText="Get Started"
+        primaryTo="/contact"
+        secondaryText="View Pricing"
+        secondaryTo="/pricing"
+      />
     </>
   );
 }

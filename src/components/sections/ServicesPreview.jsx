@@ -8,18 +8,17 @@ export default function ServicesPreview() {
         <SectionHeader
           eyebrow="Services"
           title="Support built for businesses that need cleanup and consistency"
-          text="Choose the help you need now, then scale into ongoing support."
+          text="Start with the help you need now, then move into ongoing support with a clearer financial foundation."
         />
 
         <div className="three-col-grid">
           <article className="card lentis-soft-card">
             <h3>Bookkeeping Cleanup</h3>
             <p>
-              Fix disorganized or inaccurate books and bring your records back
+              Fix disorganized or inaccurate books and get your records back
               under control.
             </p>
 
-            {/* Text link to the detailed service page */}
             <Link
               to="/services/cleanup"
               className="text-link lentis-link-underline"
@@ -31,9 +30,10 @@ export default function ServicesPreview() {
           <article className="card lentis-soft-card">
             <h3>Monthly Bookkeeping</h3>
             <p>
-              Reliable month-to-month support to keep your finances accurate and
-              current.
+              Keep your books accurate, current, and organized with reliable
+              monthly support.
             </p>
+
             <Link
               to="/services/monthly-bookkeeping"
               className="text-link lentis-link-underline"
@@ -45,9 +45,10 @@ export default function ServicesPreview() {
           <article className="card lentis-soft-card">
             <h3>QuickBooks Support</h3>
             <p>
-              Get help with setup, correction, workflow issues, and best
-              practices.
+              Get practical help with setup, corrections, workflows, and
+              everyday QuickBooks issues.
             </p>
+
             <Link
               to="/services/quickbooks-support"
               className="text-link lentis-link-underline"

@@ -73,7 +73,14 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <CTASection />
+      <CTASection
+        title="Ready to choose the right level of support?"
+        text="Let’s talk about where your books stand and what kind of support makes the most sense."
+        primaryText="Get Started"
+        primaryTo="/contact"
+        secondaryText="Explore Cleanup"
+        secondaryTo="/services/cleanup"
+      />
     </>
   );
 }
