@@ -13,8 +13,9 @@ export default function Hero() {
           </h1>
 
           <p className="hero-text">
-            Lentis helps small businesses fix messy bookkeeping, stay organized,
-            and gain clarity in their finances without the stress.
+            Lentis helps small businesses clean up messy bookkeeping, stay
+            organized month to month, and gain clearer financial visibility
+            without the stress.
           </p>
 
           {/* Main CTA buttons */}
