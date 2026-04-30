@@ -1,37 +1,16 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# Visual Studio / .NET
+.vs/
+bin/
+obj/
 
-# Node / frontend
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# Configuration files
+# Secrets
 appsettings.Development.json
 secrets.json
 
-# Optional: To catch any other environment-specific settings files
-appsettings.*.json
-!appsettings.json
+# Node / frontend
+node_modules/
+dist/
+dist-ssr/
 
-# VS / .NET build artifacts
-bin/
-obj/
+# Logs
+*.log
