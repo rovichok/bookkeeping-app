@@ -3,93 +3,124 @@ using Lentis.Api.Models;
 // using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 using Resend;
 
 
-namespace Lentis.Api.Controllers
-{
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ContactController : ControllerBase
-    {
-        private readonly AppDbContext _db;
-        private readonly IResend _resend;
-        private readonly ILogger<ContactController> _logger;
+namespace Lentis.Api.Controllers;
 
-        public ContactController(IResend resend, ILogger<ContactController> logger, AppDbContext db)
+[Route("api/[controller]")]
+[ApiController]
+public class ContactController : ControllerBase
+{
+    private readonly AppDbContext _db;
+    private readonly IResend _resend;
+    private readonly ILogger<ContactController> _logger;
+
+    public ContactController(IResend resend, ILogger<ContactController> logger, AppDbContext db)
+    {
+        _db = db;
+        _resend = resend;
+        _logger = logger;
+    }
+
+    [EnableRateLimiting("contactPolicy")]
+    [HttpPost]
+    public async Task<IActionResult> Submit([FromBody] ContactRequest request)
+    {
+        var name = request.Name.Trim();
+        var emailAddress = request.Email.Trim();
+        var message = request.Message.Trim();
+
+        // Block bots silently 
+        if (!string.IsNullOrWhiteSpace(request.Website))
         {
-            _db = db;
-            _resend = resend;
-            _logger = logger;
+            _logger.LogWarning("Honeypot triggered on contact form.");
+
+            return Ok(new
+            {
+                message = "Message received successfully."
+            });
         }
 
-        [EnableRateLimiting("contactPolicy")]
-        [HttpPost]
-        public async Task<IActionResult> Submit([FromBody] ContactRequest request)
+        var lead = new Lead
         {
-            var name = request.Name.Trim();
-            var emailAddress = request.Email.Trim();
-            var message = request.Message.Trim();
+            Name = name,
+            Email = emailAddress,
+            Message = message,
+            CreatedAtUtc = DateTime.UtcNow
+        };
 
-            // Block bots silently 
-            if (!string.IsNullOrWhiteSpace(request.Website))
-            {
-                _logger.LogWarning("Honeypot triggered on contact form.");
+        _db.Leads.Add(lead);
+        await _db.SaveChangesAsync();
 
-                return Ok(new
-                {
-                    message = "Message received successfully."
-                });
-            }
-
-            var lead = new Lead
-            {
-                Name = name,
-                Email = emailAddress,
-                Message = message,
-                CreatedAtUtc = DateTime.UtcNow
-            };
-
-            _db.Leads.Add(lead);
-            await _db.SaveChangesAsync();
-
-            var emailMessage = new EmailMessage
-            {
-                From = "Lentis <onboarding@resend.dev>",
-                Subject = "New Contact Form Submission",
-                HtmlBody = $@"
+        var emailMessage = new EmailMessage
+        {
+            From = "Lentis <onboarding@resend.dev>",
+            Subject = "New Contact Form Submission",
+            HtmlBody = $@"
                     <h2>New Contact Submission</h2>
                     <p><strong>Name:</strong> {name}</p>
                     <p><strong>Email:</strong> {emailAddress}</p>
                     <p><strong>Message:</strong></p>
                     <p>{message}</p>
                 "
-            };
+        };
 
-            emailMessage.To.Add("ayoghagborbesong@gmail.com");
+        emailMessage.To.Add("ayoghagborbesong@gmail.com");
 
-            try
+        try
+        {
+            _logger.LogInformation("Contact form submitted by {Email}", emailAddress);
+
+            await _resend.EmailSendAsync(emailMessage);
+
+            return Ok(new
             {
-                _logger.LogInformation("Contact form submitted by {Email}", emailAddress);
+                message = "Message received and email sent."
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error sending contact email");
 
-                await _resend.EmailSendAsync(emailMessage);
-
-                return Ok(new
-                {
-                    message = "Message received and email sent."
-                });
-            }
-            catch (Exception ex)
+            return StatusCode(500, new
             {
-                _logger.LogError(ex, "Error sending contact email");
-
-                return StatusCode(500, new
-                {
-                    message = "Something went wrong while sending your message.",
-                    errorCode = "EMAIL_SERVICE_FAILURE",
-                    timestamp = DateTime.UtcNow
-                });
-            }
+                message = "Something went wrong while sending your message.",
+                errorCode = "EMAIL_SERVICE_FAILURE",
+                timestamp = DateTime.UtcNow
+            });
         }
     }
 }
+
+[ApiController]
+[Route("api/[controller]")]
+public class LeadsController : ControllerBase
+{
+    private readonly AppDbContext _db;
+
+    public LeadsController(AppDbContext db)
+    {
+        _db = db;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetLeads()
+    {
+        var leads = await _db.Leads
+            .OrderByDescending(lead => lead.CreatedAtUtc)
+            .Select(lead => new
+            {
+                lead.Id,
+                lead.Name,
+                lead.Email,
+                lead.Message,
+                lead.CreatedAtUtc
+            })
+            .ToListAsync();
+
+        return Ok(leads);
+    }
+}
+
