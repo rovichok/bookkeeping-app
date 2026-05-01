@@ -31,6 +31,17 @@ namespace Lentis.Api.Controllers
             var emailAddress = request.Email.Trim();
             var message = request.Message.Trim();
 
+            // Block bots silently 
+            if (!string.IsNullOrWhiteSpace(request.Website))
+            {
+                _logger.LogWarning("Honeypot triggered on contact form.");
+
+                return Ok(new
+                {
+                    message = "Message received successfully."
+                });
+            }
+
             var lead = new Lead
             {
                 Name = name,

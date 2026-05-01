@@ -99,3 +99,12 @@ select:focus-visible {
 .lentis-link-underline:focus-visible::after {
   transform: scaleX(1);
 }
+
+.honeypot {
+  position: absolute !important;
+  left: -9999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
