@@ -7,6 +7,7 @@ export default function ContactPage() {
     name: "",
     email: "",
     message: "",
+    website: "",
   });
 
   const [status, setStatus] = useState({
@@ -65,6 +66,7 @@ export default function ContactPage() {
         name: "",
         email: "",
         message: "",
+        website: "",
       });
     } catch (error) {
       setStatus({
@@ -87,6 +89,15 @@ export default function ContactPage() {
         </div>
 
         <form className="contact-form" onSubmit={handleSubmit}>
+          <input
+            type="text"
+            name="website"
+            value={form.website}
+            onChange={handleChange}
+            className="honeypot"
+            tabIndex="-1"
+            autoComplete="off"
+          />
           <label>
             Name
             <input

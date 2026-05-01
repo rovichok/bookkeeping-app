@@ -16,5 +16,7 @@ namespace Lentis.Api.Models
         [Required(ErrorMessage = "Message is required.")]
         [StringLength(2000, MinimumLength = 10, ErrorMessage = "Message must be between 10 and 2000 characters.")]
         public string Message { get; set; } = "";
+
+        public string? Website { get; set; }
     }
 }
