@@ -108,3 +108,38 @@ select:focus-visible {
   opacity: 0 !important;
   pointer-events: none !important;
 }
+
+/*--------Beginning of AdminLeadsPage.jsx-------------*/
+.admin-toolbar {
+  margin-bottom: 1.5rem;
+}
+
+.admin-toolbar input {
+  width: 100%;
+  max-width: 420px;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 10px;
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color, #eee);
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-table th {
+  font-weight: 700;
+}
+/*--------End of AdminLeadsPage.jsx-------------------*/

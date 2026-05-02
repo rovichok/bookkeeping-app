@@ -94,6 +94,7 @@ public class ContactController : ControllerBase
     }
 }
 
+// [Route("api/leads")]
 [ApiController]
 [Route("api/[controller]")]
 public class LeadsController : ControllerBase
