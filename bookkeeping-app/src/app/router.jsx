@@ -6,6 +6,7 @@ import ContactPage from "../pages/ContactPage";
 import CleanupPage from "../pages/services/CleanupPage";
 import MonthlyBookkeepingPage from "../pages/services/MonthlyBookkeepingPage";
 import QuickBooksSupportPage from "../pages/services/QuickBooksSupportPage";
+import AdminLeadsPage from "../pages/admin/AdminLeadsPage";
 
 // createBrowserRouter uses normal browser URLs like /pricing or /contact.
 // This is the routing table for the site.
@@ -36,6 +37,12 @@ const router = createBrowserRouter([
       {
         path: "services/quickbooks-support",
         element: <QuickBooksSupportPage />,
+      },
+
+      // route: /admin/leads
+      {
+        path: "admin/leads",
+        element: <AdminLeadsPage />,
       },
     ],
   },
