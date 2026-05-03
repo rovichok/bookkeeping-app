@@ -107,21 +107,80 @@ public class LeadsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetLeads()
+    public async Task<IActionResult> GetLeads(
+    int page = 1,
+    int pageSize = 10,
+    string? search = null,
+    string sortBy = "createdAtUtc",
+    string sortDirection = "desc")
     {
-        var leads = await _db.Leads
-            .OrderByDescending(lead => lead.CreatedAtUtc)
-            .Select(lead => new
+        page = Math.Max(page, 1);
+        pageSize = Math.Clamp(pageSize, 1, 50);
+
+        var query = _db.Leads.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var value = $"%{search.Trim()}%";
+
+            query = query.Where(l =>
+                EF.Functions.ILike(l.Name, value) ||
+                EF.Functions.ILike(l.Email, value) ||
+                EF.Functions.ILike(l.Message, value)
+            );
+        }
+
+        var isDesc = sortDirection.Equals("desc", StringComparison.OrdinalIgnoreCase);
+
+        query = sortBy.ToLower() switch
+        {
+            "name" => isDesc
+                ? query.OrderByDescending(l => l.Name)
+                : query.OrderBy(l => l.Name),
+
+            "email" => isDesc
+                ? query.OrderByDescending(l => l.Email)
+                : query.OrderBy(l => l.Email),
+
+            "message" => isDesc
+                ? query.OrderByDescending(l => l.Message)
+                : query.OrderBy(l => l.Message),
+
+            "createdatutc" => isDesc
+                ? query.OrderByDescending(l => l.CreatedAtUtc)
+                : query.OrderBy(l => l.CreatedAtUtc),
+
+            _ => query.OrderByDescending(l => l.CreatedAtUtc)
+        };
+
+        var totalCount = await query.CountAsync();
+
+        var totalPages = Math.Max(
+            1,
+            (int)Math.Ceiling(totalCount / (double)pageSize)
+        );
+
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(l => new
             {
-                lead.Id,
-                lead.Name,
-                lead.Email,
-                lead.Message,
-                lead.CreatedAtUtc
+                l.Id,
+                l.Name,
+                l.Email,
+                l.Message,
+                l.CreatedAtUtc
             })
             .ToListAsync();
 
-        return Ok(leads);
+        return Ok(new
+        {
+            items,
+            page,
+            pageSize,
+            totalCount,
+            totalPages
+        });
     }
 }
 
