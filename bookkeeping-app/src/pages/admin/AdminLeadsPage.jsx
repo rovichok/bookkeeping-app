@@ -3,10 +3,14 @@ import SectionHeader from "../../components/ui/SectionHeader";
 
 const API_URL = "https://localhost:7239/api/leads";
 
+const columns = [
+  { key: "name", label: "Name" },
+  { key: "email", label: "Email" },
+  { key: "message", label: "Message" },
+  { key: "createdAtUtc", label: "Submitted" },
+];
+
 export default function AdminLeadsPage() {
-  // ---------------------------
-  // STATE (grouped)
-  // ---------------------------
   const [state, setState] = useState({
     leads: [],
     loading: true,
@@ -16,16 +20,19 @@ export default function AdminLeadsPage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  // ---------------------------
-  // FETCH LEADS (with AbortController)
-  // ---------------------------
+  const [sortConfig, setSortConfig] = useState({
+    key: "createdAtUtc",
+    direction: "desc",
+  });
+
   useEffect(() => {
     const controller = new AbortController();
-    const { signal } = controller;
 
     async function fetchLeads() {
       try {
-        const response = await fetch(API_URL, { signal });
+        const response = await fetch(API_URL, {
+          signal: controller.signal,
+        });
 
         if (!response.ok) {
           throw new Error("Unable to load leads.");
@@ -33,19 +40,16 @@ export default function AdminLeadsPage() {
 
         const data = await response.json();
 
-        // Safety check (very important in production)
         if (!Array.isArray(data)) {
           throw new Error("Invalid leads response.");
         }
 
-        // Single state update → better performance
         setState({
           leads: data,
           loading: false,
           error: "",
         });
       } catch (error) {
-        // Ignore aborted requests (component unmounted)
         if (error.name === "AbortError") return;
 
         setState((prev) => ({
@@ -58,13 +62,9 @@ export default function AdminLeadsPage() {
 
     fetchLeads();
 
-    // Cleanup
     return () => controller.abort();
   }, []);
 
-  // ---------------------------
-  // DEBOUNCE SEARCH
-  // ---------------------------
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
@@ -73,25 +73,53 @@ export default function AdminLeadsPage() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  // ---------------------------
-  // FILTERING (optimized)
-  // ---------------------------
-  const filteredLeads = useMemo(() => {
+  function handleSort(key) {
+    setSortConfig((prev) => {
+      const isSameColumn = prev.key === key;
+
+      return {
+        key,
+        direction: isSameColumn && prev.direction === "asc" ? "desc" : "asc",
+      };
+    });
+  }
+
+  function getSortIcon(key) {
+    if (sortConfig.key !== key) return "↕";
+    return sortConfig.direction === "asc" ? "↑" : "↓";
+  }
+
+  const processedLeads = useMemo(() => {
     const value = debouncedSearch.toLowerCase().trim();
 
-    if (!value) return state.leads;
+    const filtered = value
+      ? state.leads.filter((lead) =>
+          [lead.name, lead.email, lead.message].some((field) =>
+            field?.toLowerCase().includes(value),
+          ),
+        )
+      : [...state.leads];
 
-    return state.leads.filter(
-      (lead) =>
-        lead.name?.toLowerCase().includes(value) ||
-        lead.email?.toLowerCase().includes(value) ||
-        lead.message?.toLowerCase().includes(value),
-    );
-  }, [state.leads, debouncedSearch]);
+    return filtered.sort((a, b) => {
+      const aValue = a[sortConfig.key];
+      const bValue = b[sortConfig.key];
 
-  // ---------------------------
-  // UI
-  // ---------------------------
+      if (sortConfig.key === "createdAtUtc") {
+        const aDate = new Date(aValue).getTime();
+        const bDate = new Date(bValue).getTime();
+
+        return sortConfig.direction === "asc" ? aDate - bDate : bDate - aDate;
+      }
+
+      const aText = String(aValue ?? "").toLowerCase();
+      const bText = String(bValue ?? "").toLowerCase();
+
+      return sortConfig.direction === "asc"
+        ? aText.localeCompare(bText)
+        : bText.localeCompare(aText);
+    });
+  }, [state.leads, debouncedSearch, sortConfig]);
+
   return (
     <section className="section">
       <div className="container">
@@ -101,7 +129,6 @@ export default function AdminLeadsPage() {
           text="Review contact form submissions from Lentis visitors."
         />
 
-        {/* Search */}
         <div className="admin-toolbar">
           <input
             type="search"
@@ -112,27 +139,33 @@ export default function AdminLeadsPage() {
           />
         </div>
 
-        {/* Loading */}
         {state.loading && <p>Loading leads...</p>}
 
-        {/* Error */}
         {state.error && <p className="form-error">{state.error}</p>}
 
-        {/* Table */}
         {!state.loading && !state.error && (
           <div className="admin-table-wrap">
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Message</th>
-                  <th>Submitted</th>
+                  {columns.map((column) => (
+                    <th key={column.key}>
+                      <button
+                        type="button"
+                        onClick={() => handleSort(column.key)}
+                      >
+                        <span className="header-label">{column.label}</span>
+                        <span className="header-icon">
+                          {getSortIcon(column.key)}
+                        </span>
+                      </button>
+                    </th>
+                  ))}
                 </tr>
               </thead>
 
               <tbody>
-                {filteredLeads.map((lead) => (
+                {processedLeads.map((lead) => (
                   <tr key={lead.id}>
                     <td>{lead.name}</td>
                     <td>{lead.email}</td>
@@ -143,7 +176,7 @@ export default function AdminLeadsPage() {
               </tbody>
             </table>
 
-            {filteredLeads.length === 0 && <p>No leads match your search.</p>}
+            {processedLeads.length === 0 && <p>No leads match your search.</p>}
           </div>
         )}
       </div>

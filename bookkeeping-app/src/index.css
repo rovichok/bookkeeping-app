@@ -142,4 +142,15 @@ select:focus-visible {
 .admin-table th {
   font-weight: 700;
 }
+
+.admin-table th button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+}
 /*--------End of AdminLeadsPage.jsx-------------------*/
