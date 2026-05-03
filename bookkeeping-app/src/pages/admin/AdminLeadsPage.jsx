@@ -1,109 +1,127 @@
-// useState → stores data (leads, search, status)
-// useEffect → runs side effects (fetching API)
-// useMemo → optimizes filtering (prevents unnecessary recalculations)
-
 import { useEffect, useMemo, useState } from "react";
 import SectionHeader from "../../components/ui/SectionHeader";
-// reusable UI component for page title/intro
 
-// backend endpoint we created in LeadsController
 const API_URL = "https://localhost:7239/api/leads";
 
 export default function AdminLeadsPage() {
-  const [leads, setLeads] = useState([]); // holds all leads fetched from API
-  const [search, setSearch] = useState(""); // stores search input from user
-  const [status, setStatus] = useState({
+  // ---------------------------
+  // STATE (grouped)
+  // ---------------------------
+  const [state, setState] = useState({
+    leads: [],
     loading: true,
     error: "",
-  }); // loading → controls spinner/message; error → stores error message if fetch fails
+  });
 
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // ---------------------------
+  // FETCH LEADS (with AbortController)
+  // ---------------------------
   useEffect(() => {
+    const controller = new AbortController();
+    const { signal } = controller;
+
     async function fetchLeads() {
       try {
-        const response = await fetch(API_URL); // call backend API
+        const response = await fetch(API_URL, { signal });
 
-        // if server returns 4xx/5xx → throw error
         if (!response.ok) {
           throw new Error("Unable to load leads.");
         }
 
-        // convert response to JSON
         const data = await response.json();
 
-        setLeads(data); // store leads in state → triggers re-render
+        // Safety check (very important in production)
+        if (!Array.isArray(data)) {
+          throw new Error("Invalid leads response.");
+        }
+
+        // Single state update → better performance
+        setState({
+          leads: data,
+          loading: false,
+          error: "",
+        });
       } catch (error) {
-        setStatus({
+        // Ignore aborted requests (component unmounted)
+        if (error.name === "AbortError") return;
+
+        setState((prev) => ({
+          ...prev,
           loading: false,
           error: error.message || "Something went wrong.",
-        }); // if error → stop loading + show message
-        return;
+        }));
       }
-
-      // after success → stop loading
-      setStatus({
-        loading: false,
-        error: "",
-      });
     }
 
     fetchLeads();
-  }, []); // [] → runs ONLY once when component mounts
+
+    // Cleanup
+    return () => controller.abort();
+  }, []);
 
   // ---------------------------
-  //
-  // FILTERING LOGIC (SEARCH) // ---------------------------
+  // DEBOUNCE SEARCH
+  // ---------------------------
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
 
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // ---------------------------
+  // FILTERING (optimized)
+  // ---------------------------
   const filteredLeads = useMemo(() => {
-    // normalize search input (case-insensitive + remove spaces)
-    const value = search.toLowerCase().trim();
+    const value = debouncedSearch.toLowerCase().trim();
 
-    // if no search → return all leads
-    if (!value) return leads;
+    if (!value) return state.leads;
 
-    return leads.filter((lead) => {
-      return (
-        lead.name.toLowerCase().includes(value) ||
-        lead.email.toLowerCase().includes(value) ||
-        lead.message.toLowerCase().includes(value)
-      );
-    }); // filter leads where ANY field matches search
-  }, [leads, search]); // recalculates ONLY when leads or search changes
+    return state.leads.filter(
+      (lead) =>
+        lead.name?.toLowerCase().includes(value) ||
+        lead.email?.toLowerCase().includes(value) ||
+        lead.message?.toLowerCase().includes(value),
+    );
+  }, [state.leads, debouncedSearch]);
 
   // ---------------------------
-  // UI RENDER
+  // UI
   // ---------------------------
-
   return (
     <section className="section">
       <div className="container">
-        {/* Page Header */}
         <SectionHeader
           eyebrow="Admin"
           title="Contact Leads"
           text="Review contact form submissions from Lentis visitors."
         />
 
-        {/* Search Input */}
+        {/* Search */}
         <div className="admin-toolbar">
           <input
             type="search"
+            aria-label="Search leads"
             placeholder="Search by name, email, or message..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
 
-        {/* Loading State */}
-        {status.loading && <p>Loading leads...</p>}
+        {/* Loading */}
+        {state.loading && <p>Loading leads...</p>}
 
-        {/* Error State */}
-        {status.error && <p className="form-error">{status.error}</p>}
+        {/* Error */}
+        {state.error && <p className="form-error">{state.error}</p>}
 
-        {/* Table (only if loaded + no error) */}
-        {!status.loading && !status.error && (
+        {/* Table */}
+        {!state.loading && !state.error && (
           <div className="admin-table-wrap">
             <table className="admin-table">
-              {/* Table Header */}
               <thead>
                 <tr>
                   <th>Name</th>
@@ -113,7 +131,6 @@ export default function AdminLeadsPage() {
                 </tr>
               </thead>
 
-              {/* Table Body */}
               <tbody>
                 {filteredLeads.map((lead) => (
                   <tr key={lead.id}>
@@ -126,7 +143,6 @@ export default function AdminLeadsPage() {
               </tbody>
             </table>
 
-            {/* Empty state */}
             {filteredLeads.length === 0 && <p>No leads match your search.</p>}
           </div>
         )}
