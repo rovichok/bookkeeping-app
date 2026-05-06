@@ -154,3 +154,17 @@ select:focus-visible {
   cursor: pointer;
 }
 /*--------End of AdminLeadsPage.jsx-------------------*/
+
+/* AUTH */
+.nav-auth {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.nav-auth button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+}

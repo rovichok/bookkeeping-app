@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import SectionHeader from "../../components/ui/SectionHeader";
 
 const API_URL = "https://localhost:7239/api/leads";
-
 const COLUMNS = [
   { key: "name", label: "Name" },
   { key: "email", label: "Email" },
@@ -11,6 +11,19 @@ const COLUMNS = [
 ];
 
 export default function AdminLeadsPage() {
+  const navigate = useNavigate();
+
+  // 1. UI & Filter State
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(10);
+  const [sortConfig, setSortConfig] = useState({
+    key: "createdAtUtc",
+    direction: "desc",
+  });
+
+  // 2. Data State
   const [state, setState] = useState({
     leads: [],
     loading: true,
@@ -19,16 +32,7 @@ export default function AdminLeadsPage() {
     totalPages: 1,
   });
 
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize] = useState(10);
-
-  const [sortConfig, setSortConfig] = useState({
-    key: "createdAtUtc",
-    direction: "desc",
-  });
-
+  // 3. Debounce Search Logic
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
@@ -57,9 +61,25 @@ export default function AdminLeadsPage() {
           sortDirection: sortConfig.direction,
         });
 
+        const token = localStorage.getItem("lentis_admin_token");
+
+        if (!token) {
+          navigate("/admin/login");
+          return;
+        }
+
         const response = await fetch(`${API_URL}?${params.toString()}`, {
           signal: controller.signal,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
+
+        if (response.status === 401) {
+          localStorage.removeItem("lentis_admin_token");
+          navigate("/admin/login");
+          return;
+        }
 
         if (!response.ok) {
           throw new Error("Unable to load leads.");
@@ -97,7 +117,7 @@ export default function AdminLeadsPage() {
     fetchLeads();
 
     return () => controller.abort();
-  }, [page, pageSize, debouncedSearch, sortConfig]);
+  }, [page, pageSize, debouncedSearch, sortConfig, navigate]);
 
   function handleSort(key) {
     setPage(1);
