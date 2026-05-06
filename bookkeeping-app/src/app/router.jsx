@@ -7,6 +7,9 @@ import CleanupPage from "../pages/services/CleanupPage";
 import MonthlyBookkeepingPage from "../pages/services/MonthlyBookkeepingPage";
 import QuickBooksSupportPage from "../pages/services/QuickBooksSupportPage";
 import AdminLeadsPage from "../pages/admin/AdminLeadsPage";
+import AdminLoginPage from "../pages/admin/AdminLoginPage";
+// Add this line at the top of router.jsx
+import ProtectedRoute from "../components/ProtectedRoute";
 
 // createBrowserRouter uses normal browser URLs like /pricing or /contact.
 // This is the routing table for the site.
@@ -42,7 +45,17 @@ const router = createBrowserRouter([
       // route: /admin/leads
       {
         path: "admin/leads",
-        element: <AdminLeadsPage />,
+        element: (
+          <ProtectedRoute>
+            <AdminLeadsPage />
+          </ProtectedRoute>
+        ),
+      },
+
+      // route: /admin/login
+      {
+        path: "admin/login",
+        element: <AdminLoginPage />,
       },
     ],
   },

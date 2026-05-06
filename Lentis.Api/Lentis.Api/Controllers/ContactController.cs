@@ -1,5 +1,7 @@
 ﻿using Lentis.Api.Data;
 using Lentis.Api.Models;
+using Microsoft.AspNetCore.Authorization;
+
 // using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -95,6 +97,7 @@ public class ContactController : ControllerBase
 }
 
 // [Route("api/leads")]
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class LeadsController : ControllerBase
