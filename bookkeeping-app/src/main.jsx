@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider } from "react-router-dom"; // provides routing to the whole app
 import router from "./app/router"; // our centralized route definitions
+import { AuthProvider } from "./context/AuthProvider"; // Path to the file we just optimized
 
 // Global CSS files.
 // Separate styles by concern.
@@ -15,7 +16,10 @@ import "./index.css";
 // Everything in the app starts rendering from here.
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    {/* RouterProvider makes route matching work across the whole app */}
-    <RouterProvider router={router} />
+    {/* 1. Wrap everything in AuthProvider first */}
+    <AuthProvider>
+      {/* 2. Now the Router can access useAuth() inside its components */}
+      <RouterProvider router={router} />
+    </AuthProvider>
   </React.StrictMode>,
 );

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -35,10 +36,16 @@ public class AuthController : ControllerBase
 
         var token = CreateToken(request.Email);
 
-        return Ok(new
+        Response.Cookies.Append("lentis_admin", token, new CookieOptions
         {
-            token
+            HttpOnly = true,
+            Secure = true, // Works on localhost without SSL issues
+            SameSite = SameSiteMode.None, // Browser will accept this on localhost
+            Expires = DateTimeOffset.UtcNow.AddHours(2),
+            Path = "/"                // CRITICAL: Makes the cookie available to /api/leads
         });
+
+        return Ok(new { message = "Logged in" });
     }
 
     private string CreateToken(string email)
@@ -75,6 +82,37 @@ public class AuthController : ControllerBase
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
+
+    [Authorize]
+    [HttpGet("me")]
+    public IActionResult Me()
+    {
+        var email = User.FindFirstValue(ClaimTypes.Email);
+
+        return Ok(new
+        {
+            isAuthenticated = true,
+            email
+        });
+    }
+
+    // Logout
+    [HttpPost("logout")]
+    public IActionResult Logout()
+    {
+        // Appends a cookie with an expired date to force the browser to delete it
+        Response.Cookies.Delete("lentis_admin", new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Path = "/" // MUST match the path used when the cookie was created
+        });
+
+        return Ok(new { message = "Logged out" });
+    }
+
 }
 
 public class LoginRequest

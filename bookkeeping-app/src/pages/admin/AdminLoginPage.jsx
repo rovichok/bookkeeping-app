@@ -1,33 +1,28 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const API_URL = "https://localhost:7239/api/auth/login";
 
 export default function AdminLoginPage() {
-  // ---------------------------
-  // ROUTING HOOKS
-  // ---------------------------
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  // Determine where to send the user after login:
-  // 1. The page they were trying to access (from ProtectedRoute state)
-  // 2. Default to the leads page
-  const from = location.state?.from?.pathname || "/admin/leads";
-
-  // ---------------------------
-  // STATE
-  // ---------------------------
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // ---------------------------
-  // HANDLERS
-  // ---------------------------
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth(); // Grabbing the login function from your AuthContext
+
+  // SMART REDIRECT:
+  // If the user was kicked here from a protected page, location.state.from
+  // holds that URL. If they came here directly, default to the leads page.
+  const from = location.state?.from?.pathname || "/admin/leads";
+
+  // Updates form state as the user types
   function handleChange(e) {
     const { name, value } = e.target;
 
@@ -40,15 +35,6 @@ export default function AdminLoginPage() {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    const email = formData.email.trim();
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailRegex.test(email)) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-
     setLoading(true);
     setError("");
 
@@ -58,34 +44,23 @@ export default function AdminLoginPage() {
         headers: {
           "Content-Type": "application/json",
         },
+        // CRITICAL: Tells the browser to receive and store the HttpOnly cookie
+        credentials: "include",
         body: JSON.stringify({
-          email,
+          email: formData.email.trim(),
           password: formData.password,
         }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error("Invalid credentials. Please try again.");
-        }
-
-        if (response.status === 500) {
-          throw new Error("Server error. Please try again later.");
-        }
-
-        throw new Error("An unexpected error occurred.");
+        throw new Error("Invalid email or password.");
       }
 
-      if (!data.token) {
-        throw new Error("Login response was invalid.");
-      }
+      // Update React state so the app knows we are now authenticated
+      login();
 
-      // Success: Store token and redirect
-      localStorage.setItem("lentis_admin_token", data.token);
-
-      // Navigate back to the intended page, replacing login in history
+      // Send the user to their destination and 'replace: true'
+      // prevents them from clicking "back" to the login form.
       navigate(from, { replace: true });
     } catch (err) {
       setError(err.message || "Something went wrong.");
@@ -94,9 +69,6 @@ export default function AdminLoginPage() {
     }
   }
 
-  // ---------------------------
-  // UI
-  // ---------------------------
   return (
     <section className="section">
       <div className="container" style={{ maxWidth: "420px" }}>
