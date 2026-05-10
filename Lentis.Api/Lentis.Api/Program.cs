@@ -9,44 +9,34 @@ using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-// 1. Core services
+// --- 1. CORE SERVICES ---
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-// --- NEW DATA SERVICE SECTION ---------------------------------------------------------- //
-
-// Retrieve the database connection string
+// --- 2. DATABASE CONFIGURATION ---
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-// Validate that the connection string is not empty
-if (string.IsNullOrWhiteSpace(connectionString))
-{
-    throw new InvalidOperationException("DefaultConnection is missing.");
-}
-
-// Register the database context with the DI container using PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseNpgsql(connectionString);
 });
 
-
-// --------------------------------
-
-// 2. CORS
+// --- 3. CORS CONFIGURATION (Critical for Cookies) ---
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        // Explicitly allow your React dev server
+        policy.WithOrigins("http://localhost:5173", "https://localhost:5173")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials(); // Required for HttpOnly cookies
     });
 });
 
-// 3. Rate limiting
+// --- 4. RATE LIMITING ---
 builder.Services.AddRateLimiter(options =>
 {
     options.AddFixedWindowLimiter("contactPolicy", limiterOptions =>
@@ -60,45 +50,23 @@ builder.Services.AddRateLimiter(options =>
     options.OnRejected = async (context, token) =>
     {
         context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-        await context.HttpContext.Response.WriteAsync(
-            "Too many requests. Please try again later.",
-            token
-        );
+        await context.HttpContext.Response.WriteAsync("Too many requests. Please try again later.", token);
     };
 });
 
-// 4. External services (Resend)
+// --- 5. EXTERNAL SERVICES (Resend) ---
 builder.Services.AddOptions();
 builder.Services.AddHttpClient<ResendClient>();
+var resendApiToken = builder.Configuration["RESEND_APITOKEN"]
+    ?? throw new InvalidOperationException("RESEND_APITOKEN is missing.");
 
-var resendApiToken = builder.Configuration["RESEND_APITOKEN"];
-
-if (string.IsNullOrWhiteSpace(resendApiToken))
-{
-    throw new InvalidOperationException("RESEND_APITOKEN is missing.");
-}
-
-builder.Services.Configure<ResendClientOptions>(options =>
-{
-    options.ApiToken = resendApiToken;
-});
-
+builder.Services.Configure<ResendClientOptions>(options => { options.ApiToken = resendApiToken; });
 builder.Services.AddTransient<IResend, ResendClient>();
 
-// 4. Dev tools
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-// JWT AUTH
-var jwtKey = builder.Configuration["Jwt:Key"]
-    ?? throw new InvalidOperationException("Jwt:Key is missing.");
-
-var jwtIssuer = builder.Configuration["Jwt:Issuer"]
-    ?? throw new InvalidOperationException("Jwt:Issuer is missing.");
-
-var jwtAudience = builder.Configuration["Jwt:Audience"]
-    ?? throw new InvalidOperationException("Jwt:Audience is missing.");
+// --- 6. AUTHENTICATION & JWT (Configured to read from Cookie) ---
+var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is missing.");
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? throw new InvalidOperationException("Jwt:Issuer is missing.");
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? throw new InvalidOperationException("Jwt:Audience is missing.");
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -108,17 +76,26 @@ builder.Services
         {
             ValidateIssuer = true,
             ValidIssuer = jwtIssuer,
-
             ValidateAudience = true,
             ValidAudience = jwtAudience,
-
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtKey)
-            ),
-
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromMinutes(1)
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                // Pull token from the cookie we set in AuthController
+                var token = context.Request.Cookies["lentis_admin"];
+                if (!string.IsNullOrEmpty(token))
+                {
+                    context.Token = token;
+                }
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -126,25 +103,28 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// --- 7. MIDDLEWARE PIPELINE (The Order Matters!) ---
+
+// A. CORS must be at the very top to handle preflight requests for cookies
+app.UseCors("Frontend");
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// Below "app.Use..." is the middleware section:
-
+// B. Standard Security and Routing
 app.UseHttpsRedirection();
-
-// CORS MUST come before MapControllers
-app.UseCors("Frontend");
-
+app.UseRouting();
 app.UseRateLimiter();
 
+// C. Auth must come AFTER Routing/CORS but BEFORE MapControllers
 app.UseAuthentication();
 app.UseAuthorization();
 
+// D. Endpoints
 app.MapControllers();
 
 app.Run();
+
