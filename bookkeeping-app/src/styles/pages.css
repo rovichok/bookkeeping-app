@@ -2,3 +2,65 @@
 .cleanup-note {
   margin-top: 1.5rem;
 }
+
+/* Start AdminLoginPage */
+.admin-login-page {
+  min-height: 55vh;
+  display: grid;
+  place-items: center;
+  padding: 4rem 1rem;
+}
+
+.admin-login-card {
+  width: min(100%, 420px);
+  padding: 2rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 1.25rem;
+  background: #ffffff;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+
+.admin-login-card h1 {
+  margin: 0 0 1.5rem;
+  text-align: center;
+  font-size: 1.75rem;
+}
+
+.admin-login-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-login-form label {
+  display: grid;
+  gap: 0.4rem;
+  font-weight: 600;
+}
+
+.admin-login-form input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  padding: 0.8rem 0.9rem;
+  font: inherit;
+}
+
+.admin-login-form input:focus {
+  border-color: #111827;
+}
+
+.admin-login-form button {
+  margin-top: 0.5rem;
+  border: none;
+  border-radius: 999px;
+  padding: 0.8rem 1rem;
+  background: #111827;
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-login-form button:hover {
+  background: #1f2937;
+}
+/* End AdminLoginPage */

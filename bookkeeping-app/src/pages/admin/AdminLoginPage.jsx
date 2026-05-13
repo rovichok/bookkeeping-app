@@ -70,8 +70,8 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <section className="section">
-      <div className="container" style={{ maxWidth: "420px" }}>
+    <section className="admin-login-page">
+      <div className="admin-login-card">
         <h2>Admin Login</h2>
 
         {error && (
@@ -80,8 +80,8 @@ export default function AdminLoginPage() {
           </p>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <div>
+        <form className="admin-login-form" onSubmit={handleSubmit}>
+          <div className="admin-login-field">
             <label htmlFor="email">Email</label>
             <input
               id="email"
@@ -94,7 +94,7 @@ export default function AdminLoginPage() {
             />
           </div>
 
-          <div>
+          <div className="admin-login-field">
             <label htmlFor="password">Password</label>
             <input
               id="password"
