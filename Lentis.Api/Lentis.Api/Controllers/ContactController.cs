@@ -1,5 +1,6 @@
 ﻿using Lentis.Api.Data;
 using Lentis.Api.Models;
+using Lentis.Api.Models.Dto;
 using Microsoft.AspNetCore.Authorization;
 
 // using Microsoft.AspNetCore.Http;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Resend;
+using System.Xml.Linq;
 
 
 namespace Lentis.Api.Controllers;
@@ -96,6 +98,7 @@ public class ContactController : ControllerBase
     }
 }
 
+
 // [Route("api/leads")]
 [Authorize]
 [ApiController]
@@ -110,6 +113,7 @@ public class LeadsController : ControllerBase
     }
 
     [HttpGet]
+    [ProducesResponseType(typeof(PagedResponseDto<LeadDetailsDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetLeads(
     int page = 1,
     int pageSize = 10,
@@ -117,10 +121,16 @@ public class LeadsController : ControllerBase
     string sortBy = "createdAtUtc",
     string sortDirection = "desc")
     {
+        // Prevent invalid pagination values
         page = Math.Max(page, 1);
         pageSize = Math.Clamp(pageSize, 1, 50);
 
+        // Read-only query optimization
         var query = _db.Leads.AsNoTracking();
+
+        // ---------------------------
+        // SEARCH
+        // ---------------------------
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -133,28 +143,43 @@ public class LeadsController : ControllerBase
             );
         }
 
-        var isDesc = sortDirection.Equals("desc", StringComparison.OrdinalIgnoreCase);
+        // ---------------------------
+        // SORTING
+        // ---------------------------
 
-        query = sortBy.ToLower() switch
+        bool isDesc = sortDirection.Equals(
+            "desc",
+            StringComparison.OrdinalIgnoreCase
+        );
+
+        query = sortBy switch
         {
-            "name" => isDesc
-                ? query.OrderByDescending(l => l.Name)
-                : query.OrderBy(l => l.Name),
+            string s when s.Equals("name", StringComparison.OrdinalIgnoreCase)
+                => isDesc
+                    ? query.OrderByDescending(l => l.Name)
+                    : query.OrderBy(l => l.Name),
 
-            "email" => isDesc
-                ? query.OrderByDescending(l => l.Email)
-                : query.OrderBy(l => l.Email),
+            string s when s.Equals("email", StringComparison.OrdinalIgnoreCase)
+                => isDesc
+                    ? query.OrderByDescending(l => l.Email)
+                    : query.OrderBy(l => l.Email),
 
-            "message" => isDesc
-                ? query.OrderByDescending(l => l.Message)
-                : query.OrderBy(l => l.Message),
+            string s when s.Equals("message", StringComparison.OrdinalIgnoreCase)
+                => isDesc
+                    ? query.OrderByDescending(l => l.Message)
+                    : query.OrderBy(l => l.Message),
 
-            "createdatutc" => isDesc
-                ? query.OrderByDescending(l => l.CreatedAtUtc)
-                : query.OrderBy(l => l.CreatedAtUtc),
+            string s when s.Equals("createdAtUtc", StringComparison.OrdinalIgnoreCase)
+                => isDesc
+                    ? query.OrderByDescending(l => l.CreatedAtUtc)
+                    : query.OrderBy(l => l.CreatedAtUtc),
 
             _ => query.OrderByDescending(l => l.CreatedAtUtc)
         };
+
+        // ---------------------------
+        // TOTALS
+        // ---------------------------
 
         var totalCount = await query.CountAsync();
 
@@ -163,27 +188,138 @@ public class LeadsController : ControllerBase
             (int)Math.Ceiling(totalCount / (double)pageSize)
         );
 
+        // ---------------------------
+        // PAGINATED DATA
+        // ---------------------------
+
         var items = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(l => new
-            {
+            .Select(l => new LeadDetailsDto(
                 l.Id,
                 l.Name,
                 l.Email,
                 l.Message,
                 l.CreatedAtUtc
-            })
+            ))
             .ToListAsync();
 
-        return Ok(new
-        {
+        // ---------------------------
+        // RESPONSE
+        // ---------------------------
+
+        var response = new PagedResponseDto<LeadDetailsDto>(
             items,
             page,
             pageSize,
             totalCount,
             totalPages
-        });
+        );
+
+        return Ok(response);
     }
+
+    // New code
+    [HttpPut("{id:int}")]
+    [ProducesResponseType(typeof(LeadDetailsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateLead(int id, [FromBody] UpdateLeadDto dto)
+    {
+        // 1. Fetch from context cache (efficient)
+        var lead = await _db.Leads.FindAsync(id);
+
+        if (lead == null)
+        {
+            return NotFound(new { message = $"Lead with ID {id} not found." });
+        }
+
+        // 2. Map safe fields from incoming UpdateLeadDto
+        lead.Name = dto.Name.Trim();
+        lead.Email = dto.Email.Trim();
+        lead.Message = dto.Message.Trim();
+
+        // 3. Persist down to SQL database
+        await _db.SaveChangesAsync();
+
+        // 4. Return the standardized LeadDetailsDto response
+        var response = new LeadDetailsDto(
+            lead.Id,
+            lead.Name,
+            lead.Email,
+            lead.Message,
+            lead.CreatedAtUtc
+        );
+
+        return Ok(response);
+    }
+
+
+    // New code
+    [HttpGet("{id:int}")]
+    [ProducesResponseType(typeof(LeadDetailsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetLead(int id)
+    {
+        var lead = await _db.Leads
+            .AsNoTracking()
+            .Where(l => l.Id == id)
+            .Select(l => new LeadDetailsDto(
+                l.Id,
+                l.Name,
+                l.Email,
+                l.Message,
+                l.CreatedAtUtc
+            ))
+            .FirstOrDefaultAsync();
+
+        if (lead == null)
+        {
+            return NotFound(new
+            {
+                message = $"Lead with ID {id} not found."
+            });
+        }
+
+        return Ok(lead);
+    }
+
+    // New code
+    [HttpDelete("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteLead(int id)
+    {
+
+        // Executes a single DELETE query directly in the database.
+        // This permanently wipes the row instantly without loading it into server memory first.
+        int rowsAffected = await _db.Leads
+            .Where(l => l.Id == id)
+            .ExecuteDeleteAsync(); // Requires EF Core 7 or higher
+
+        // If no rows were changed, the ID did not exist in the database
+        if (rowsAffected == 0)
+        {
+            return NotFound(new { message = $"Lead with ID {id} not found." });
+        }
+
+        // Returns a clean 204 No Content success response
+        return NoContent();
+    }
+
+    /*
+    [HttpGet("debug")]
+    public async Task<IActionResult> Debug()
+    {
+        var leads = await _db.Leads
+            .Select(l => new
+            {
+                l.Id,
+                l.Name
+            })
+            .ToListAsync();
+
+        return Ok(leads);
+    }
+    */
 }
 
