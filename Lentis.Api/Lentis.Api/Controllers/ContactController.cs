@@ -3,6 +3,7 @@ using Lentis.Api.Models;
 using Lentis.Api.Models.Dto.Leads;
 using Microsoft.AspNetCore.Authorization;
 
+
 // using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -28,9 +29,9 @@ public class ContactController : ControllerBase
         _logger = logger;
     }
 
-    [EnableRateLimiting("contactPolicy")]
+    [EnableRateLimiting("LeadSubmitPolicy")]
     [HttpPost]
-    public async Task<IActionResult> Submit([FromBody] ContactRequest request)
+    public async Task<IActionResult> Submit([FromBody] CreateLeadDto request)
     {
         var name = request.Name.Trim();
         var emailAddress = request.Email.Trim();
@@ -90,6 +91,8 @@ public class ContactController : ControllerBase
 
             return StatusCode(500, new
             {
+                //message = ex.Message,
+                //detail = ex.ToString()
                 message = "Something went wrong while sending your message.",
                 errorCode = "EMAIL_SERVICE_FAILURE",
                 timestamp = DateTime.UtcNow

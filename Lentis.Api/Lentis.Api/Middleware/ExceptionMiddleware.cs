@@ -32,8 +32,12 @@ public class ExceptionMiddleware
 
             var response = new
             {
-                message = "An unexpected server error occurred.",
+                message = ex.Message,
+                detail = ex.ToString(),
                 statusCode = context.Response.StatusCode
+
+                //message = "An unexpected server error occurred.",
+                //statusCode = context.Response.StatusCode
             };
 
             var json = JsonSerializer.Serialize(response);
