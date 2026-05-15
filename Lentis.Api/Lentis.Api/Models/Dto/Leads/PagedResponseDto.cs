@@ -1,4 +1,4 @@
-﻿namespace Lentis.Api.Models.Dto;
+﻿namespace Lentis.Api.Models.Dto.Leads;
 
 public record PagedResponseDto<T>(
     IReadOnlyList<T> Items,
