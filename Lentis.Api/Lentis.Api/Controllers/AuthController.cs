@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Lentis.Api.Models.Dto.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -20,18 +22,35 @@ public class AuthController : ControllerBase
         _configuration = configuration;
     }
 
+    [EnableRateLimiting("AdminLoginPolicy")]
     [HttpPost("login")]
-    public IActionResult Login([FromBody] LoginRequest request)
+    public IActionResult Login([FromBody] AdminLoginDto request)
     {
         var adminEmail = _configuration["AdminCredentials:Email"];
-        var adminPassword = _configuration["AdminCredentials:Password"];
+        var adminPasswordHash = _configuration["AdminCredentials:PasswordHash"];
 
-        if (request.Email != adminEmail || request.Password != adminPassword)
+        if (string.IsNullOrWhiteSpace(adminEmail) ||
+            string.IsNullOrWhiteSpace(adminPasswordHash))
         {
-            return Unauthorized(new
+            return StatusCode(500, new
             {
-                message = "Invalid email or password."
+                message = "Admin authentication is not configured."
             });
+        }
+
+        if (request.Email != adminEmail)
+        {
+            return Unauthorized(new { message = "Invalid email or password." });
+        }
+
+        bool isValidPassword = BCrypt.Net.BCrypt.Verify(
+            request.Password,
+            adminPasswordHash
+        );
+
+        if (!isValidPassword)
+        {
+            return Unauthorized(new { message = "Invalid email or password." });
         }
 
         var token = CreateToken(request.Email);
@@ -39,10 +58,10 @@ public class AuthController : ControllerBase
         Response.Cookies.Append("lentis_admin", token, new CookieOptions
         {
             HttpOnly = true,
-            Secure = true, // Works on localhost without SSL issues
-            SameSite = SameSiteMode.None, // Browser will accept this on localhost
+            Secure = true,
+            SameSite = SameSiteMode.None,
             Expires = DateTimeOffset.UtcNow.AddHours(2),
-            Path = "/"                // CRITICAL: Makes the cookie available to /api/leads
+            Path = "/"
         });
 
         return Ok(new { message = "Logged in" });
