@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Lentis.Api.Models.Dto;
+namespace Lentis.Api.Models.Dto.Leads;
 
 public record LeadDetailsDto
 {

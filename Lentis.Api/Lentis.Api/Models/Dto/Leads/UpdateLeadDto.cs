@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Lentis.Api.Models;
+namespace Lentis.Api.Models.Dto.Leads;
 
 public class UpdateLeadDto
 {

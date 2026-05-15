@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Resend;
 using System.Text;
 using System.Threading.RateLimiting;
+using YourNamespace.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -105,26 +106,31 @@ var app = builder.Build();
 
 // --- 7. MIDDLEWARE PIPELINE (The Order Matters!) ---
 
-// A. CORS must be at the very top to handle preflight requests for cookies
-app.UseCors("Frontend");
+// A. Global Error Handling
+app.UseMiddleware<ExceptionMiddleware>();
 
+// B. Swagger
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// B. Standard Security and Routing
+// C. Protocol and Routing
 app.UseHttpsRedirection();
 app.UseRouting();
+
+// D. CORS
+app.UseCors("Frontend");
+
+// E. Rate Limiting
 app.UseRateLimiter();
 
-// C. Auth must come AFTER Routing/CORS but BEFORE MapControllers
+// F. Security & Identity
 app.UseAuthentication();
 app.UseAuthorization();
 
-// D. Endpoints
+// G. Execution
 app.MapControllers();
 
 app.Run();
-

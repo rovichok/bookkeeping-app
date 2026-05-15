@@ -1,6 +1,6 @@
 ﻿using Lentis.Api.Data;
 using Lentis.Api.Models;
-using Lentis.Api.Models.Dto;
+using Lentis.Api.Models.Dto.Leads;
 using Microsoft.AspNetCore.Authorization;
 
 // using Microsoft.AspNetCore.Http;
