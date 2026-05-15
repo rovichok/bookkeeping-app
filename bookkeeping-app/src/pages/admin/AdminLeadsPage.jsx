@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
-// Component imports
 import SectionHeader from "../../components/ui/SectionHeader";
 import { useAuth } from "../../context/AuthContext";
 import DeleteLeadButton from "./DeleteLeadButton";
@@ -9,11 +8,11 @@ import EditLeadModal from "./EditLeadModal";
 import EditLeadButton from "./EditLeadButton";
 import ConfirmModal from "./ConfirmModal";
 import AdminToast from "./AdminToast";
+import LeadTableSkeleton from "./LeadTableSkeleton";
+import AdminEmptyState from "./AdminEmptyState";
 
-// Backend API gateway for contact leads
 const API_URL = "https://localhost:7239/api/leads";
 
-// Table layout schema defining object keys and headers
 const COLUMNS = [
   { key: "name", label: "Name" },
   { key: "email", label: "Email" },
@@ -22,89 +21,47 @@ const COLUMNS = [
 ];
 
 export default function AdminLeadsPage() {
-  const navigate = useNavigate(); // React Router hook for page redirects
-  const { logout } = useAuth(); // Custom auth context hook to handle session terminations
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
-  // =========================
-  // DATA STATE
-  // =========================
+  const [leads, setLeads] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const [leads, setLeads] = useState([]); // Holds the array of lead objects fetched from server
-  const [loading, setLoading] = useState(true); // Tracks global network request state
-  const [error, setError] = useState(""); // Stores fetch or server-side error messages
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
-  // =========================
-  // PAGINATION STATE
-  // =========================
-
-  const [page, setPage] = useState(1); // Tracks current active table page
-  const [pageSize] = useState(10); // Configures static rows display limit per page
-
-  const [totalCount, setTotalCount] = useState(0); // Total lead count across database
-  const [totalPages, setTotalPages] = useState(1); // Derived total pages calculated by backend
-
-  // =========================
-  // SEARCH STATE
-  // =========================
-
-  const [search, setSearch] = useState(""); // Direct binding for the text input box
-  const [debouncedSearch, setDebouncedSearch] = useState(""); // Delayed value used to trigger API calls
-
-  // =========================
-  // SORT STATE
-  // =========================
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const [sortConfig, setSortConfig] = useState({
-    key: "createdAtUtc", // Targeted database column for sorting
-    direction: "desc", // "asc" or "desc" sorting order
+    key: "createdAtUtc",
+    direction: "desc",
   });
 
-  // =========================
-  // EDIT STATE
-  // =========================
+  const [editingLead, setEditingLead] = useState(null);
+  const [savingEdit, setSavingEdit] = useState(false);
 
-  const [editingLead, setEditingLead] = useState(null); // Active lead object populating the open modal
-  const [savingEdit, setSavingEdit] = useState(false); // UI loading flag for patch/put operations
-
-  // =========================
-  // REFRESH KEY
-  // =========================
   const [refreshKey, setRefreshKey] = useState(0);
-
-  // =========================
-  // LEAD PENDING STATE
-  // =========================
   const [leadPendingDelete, setLeadPendingDelete] = useState(null);
 
-  // =========================
-  // TOAST STATE
-  // =========================
   const [toast, setToast] = useState({
     message: "",
     type: "success",
   });
 
-  // =========================
-  // DEBOUNCED SEARCH EFFECT
-  // =========================
-
   useEffect(() => {
-    // Wait for user to stop typing for 300ms before triggering a query
     const timer = setTimeout(() => {
       setDebouncedSearch(search.trim());
-      setPage(1); // Reset back to first page when filtering results
+      setPage(1);
     }, 300);
 
-    // Cancel old timer if input changes again before 300ms passes
     return () => clearTimeout(timer);
   }, [search]);
 
-  // =========================
-  // FETCH LEADS EFFECT
-  // =========================
-
   useEffect(() => {
-    // Instantiates controller to cancel network request if dependencies change quickly
     const controller = new AbortController();
 
     async function fetchLeads() {
@@ -112,7 +69,6 @@ export default function AdminLeadsPage() {
       setError("");
 
       try {
-        // Construct standard query parameters for server pagination/sorting
         const params = new URLSearchParams({
           page: String(page),
           pageSize: String(pageSize),
@@ -122,11 +78,10 @@ export default function AdminLeadsPage() {
         });
 
         const response = await fetch(`${API_URL}?${params.toString()}`, {
-          credentials: "include", // Passes HttpOnly authentication cookies
-          signal: controller.signal, // Attaches request abort listener
+          credentials: "include",
+          signal: controller.signal,
         });
 
-        // Terminate flow and redirect user if credentials have expired
         if (response.status === 401) {
           await logout();
           navigate("/admin/login", { replace: true });
@@ -143,7 +98,6 @@ export default function AdminLeadsPage() {
           throw new Error("Invalid leads response.");
         }
 
-        // Format dates into localized strings directly inside state allocation loop
         const formattedLeads = data.items.map((lead) => ({
           ...lead,
           displayDate: new Date(lead.createdAtUtc).toLocaleString(),
@@ -153,9 +107,7 @@ export default function AdminLeadsPage() {
         setTotalCount(data.totalCount ?? 0);
         setTotalPages(data.totalPages ?? 1);
       } catch (error) {
-        // Suppress errors explicitly triggered by React lifecycle unmount aborts
         if (error.name === "AbortError") return;
-
         setError(error.message || "Something went wrong.");
       } finally {
         setLoading(false);
@@ -164,7 +116,6 @@ export default function AdminLeadsPage() {
 
     fetchLeads();
 
-    // Aborts open HTTP request if the component unmounts or dependencies change
     return () => controller.abort();
   }, [
     page,
@@ -176,9 +127,6 @@ export default function AdminLeadsPage() {
     navigate,
   ]);
 
-  // =========================
-  // AUTO-REFRESH EFFECT
-  // =========================
   useEffect(() => {
     if (editingLead) return;
 
@@ -189,22 +137,26 @@ export default function AdminLeadsPage() {
     return () => clearInterval(intervalId);
   }, [editingLead]);
 
-  // =========================
-  // SORTING HANDLERS
-  // =========================
+  const showToast = useCallback((message, type = "success") => {
+    setToast({ message, type });
 
-  // Triggers column updates and resets current active page index to 1
+    setTimeout(() => {
+      setToast({
+        message: "",
+        type: "success",
+      });
+    }, 3000);
+  }, []);
+
   const handleSort = useCallback((key) => {
     setPage(1);
 
     setSortConfig((prev) => ({
       key,
-      // Invert direction if clicking current sort header, otherwise default to asc
       direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
     }));
   }, []);
 
-  // Evaluates appropriate text arrow graphics to draw beside active header keys
   const getSortIcon = useCallback(
     (key) => {
       if (sortConfig.key !== key) return "↕";
@@ -213,19 +165,14 @@ export default function AdminLeadsPage() {
     [sortConfig],
   );
 
-  // Manages accessible descriptive labels for screen readers reading header sorts
   const getAriaSort = useCallback(
     (key) => {
       if (sortConfig.key !== key) return "none";
-
       return sortConfig.direction === "asc" ? "ascending" : "descending";
     },
     [sortConfig],
   );
 
-  // =========================
-  // DELETE LEAD HANDLER
-  // =========================
   const handleRequestDeleteLead = useCallback((id) => {
     setLeadPendingDelete(id);
   }, []);
@@ -244,7 +191,6 @@ export default function AdminLeadsPage() {
       }
 
       setLeads((prev) => prev.filter((lead) => lead.id !== leadPendingDelete));
-
       setTotalCount((prev) => Math.max(prev - 1, 0));
 
       if (leads.length === 1 && page > 1) {
@@ -256,34 +202,22 @@ export default function AdminLeadsPage() {
     } catch (error) {
       alert(error.message || "Something went wrong.");
     }
-  }, [leadPendingDelete, leads.length, page]);
+  }, [leadPendingDelete, leads.length, page, showToast]);
 
-  // =========================
-  // PAGINATION LABEL
-  // =========================
-
-  // Generates analytical label string string; updates only when structural counts change
   const paginationLabel = useMemo(() => {
     return `Page ${page} of ${totalPages} · ${totalCount} ${
       totalCount === 1 ? "lead" : "leads"
     }`;
   }, [page, totalPages, totalCount]);
 
-  // =========================
-  // MODAL ACTIONS
-  // =========================
-
-  // Opens editing view and hooks targeted lead reference data
   const handleOpenEditModal = useCallback((lead) => {
     setEditingLead(lead);
   }, []);
 
-  // Wipes edit state hooks to close modal overlay layout
   const handleCloseEditModal = useCallback(() => {
     setEditingLead(null);
   }, []);
 
-  // Processes form modifications from EditLeadModal using server updates
   async function handleSaveLead(id, updatedLead) {
     setSavingEdit(true);
 
@@ -297,7 +231,6 @@ export default function AdminLeadsPage() {
         body: JSON.stringify(updatedLead),
       });
 
-      // Authentication expiration redirect catch
       if (response.status === 401) {
         await logout();
         navigate("/admin/login", { replace: true });
@@ -310,7 +243,6 @@ export default function AdminLeadsPage() {
 
       const savedLead = await response.json();
 
-      // Merges newly updated parameters into local leads state to prevent full page re-fetch
       setLeads((prev) =>
         prev.map((lead) =>
           lead.id === id
@@ -323,7 +255,6 @@ export default function AdminLeadsPage() {
         ),
       );
 
-      // Successfully close dialog modal on complete resolution
       setEditingLead(null);
       showToast("Lead updated successfully.");
     } catch (error) {
@@ -332,22 +263,6 @@ export default function AdminLeadsPage() {
       setSavingEdit(false);
     }
   }
-
-  // Toast Function
-  function showToast(message, type = "success") {
-    setToast({ message, type });
-
-    setTimeout(() => {
-      setToast({
-        message: "",
-        type: "success",
-      });
-    }, 3000);
-  }
-
-  // =========================
-  // RENDER JSX
-  // =========================
 
   return (
     <section className="section">
@@ -358,7 +273,6 @@ export default function AdminLeadsPage() {
           text="Review contact form submissions from Lentis visitors."
         />
 
-        {/* Toolbar containing live context search bar */}
         <div className="admin-toolbar">
           <input
             type="search"
@@ -378,109 +292,97 @@ export default function AdminLeadsPage() {
           </button>
         </div>
 
-        {/* Conditional global error alert strip */}
         {error && (
           <p className="form-error" role="alert">
             {error}
           </p>
         )}
 
-        {/* Dynamic Data Table Framework */}
-        <div className="admin-table-wrap">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                {/* Dynamically construct standard table tracking headers from schema layout */}
-                {COLUMNS.map((column) => (
-                  <th key={column.key} aria-sort={getAriaSort(column.key)}>
-                    <button
-                      type="button"
-                      onClick={() => handleSort(column.key)}
-                    >
-                      <span className="header-label">{column.label}</span>
-                      <span className="header-icon">
-                        {getSortIcon(column.key)}
-                      </span>
-                    </button>
-                  </th>
-                ))}
-                <th>Actions</th>
-              </tr>
-            </thead>
+        {loading ? (
+          <LeadTableSkeleton rows={pageSize} />
+        ) : error ? (
+          <p className="form-error" role="alert">
+            Unable to display leads.
+          </p>
+        ) : leads.length === 0 ? (
+          <AdminEmptyState
+            searchTerm={search}
+            onClearSearch={() => setSearch("")}
+          />
+        ) : (
+          <>
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    {COLUMNS.map((column) => (
+                      <th key={column.key} aria-sort={getAriaSort(column.key)}>
+                        <button
+                          type="button"
+                          onClick={() => handleSort(column.key)}
+                        >
+                          <span className="header-label">{column.label}</span>
+                          <span className="header-icon">
+                            {getSortIcon(column.key)}
+                          </span>
+                        </button>
+                      </th>
+                    ))}
 
-            <tbody>
-              {loading ? (
-                // Loading State Row placeholder
-                <tr>
-                  <td colSpan={COLUMNS.length + 1}>
-                    <div className="admin-loading-row">
-                      <span className="admin-spinner" aria-hidden="true"></span>
-                      <span>Loading leads...</span>
-                    </div>
-                  </td>
-                </tr>
-              ) : error ? (
-                // Error Fallback Row placeholder
-                <tr>
-                  <td colSpan={COLUMNS.length + 1}>Unable to display leads.</td>
-                </tr>
-              ) : leads.length > 0 ? (
-                // Populated Table Row Content Loop
-                leads.map((lead) => (
-                  <tr key={lead.id}>
-                    <td>{lead.name}</td>
-                    <td>{lead.email}</td>
-                    <td>{lead.message}</td>
-                    <td>{lead.displayDate}</td>
-                    <td className="admin-actions">
-                      {/* Action buttons allowing admin state interaction workflows */}
-                      <EditLeadButton
-                        lead={lead}
-                        onEdit={handleOpenEditModal}
-                      />
-                      <DeleteLeadButton
-                        leadId={lead.id}
-                        onDelete={handleRequestDeleteLead}
-                      />
-                    </td>
+                    <th>Actions</th>
                   </tr>
-                ))
-              ) : (
-                // Empty Dataset Match fallback interface row
-                <tr>
-                  <td colSpan={COLUMNS.length + 1}>
-                    No leads match your search.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                </thead>
 
-        {/* Pagination Footer controls (hidden during loading windows or zero-record matches) */}
-        {!loading && !error && totalCount > 0 && (
-          <div className="admin-pagination">
-            <button
-              type="button"
-              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-              disabled={page === 1}
-            >
-              Previous
-            </button>
+                <tbody>
+                  {leads.map((lead) => (
+                    <tr key={lead.id}>
+                      <td>{lead.name}</td>
+                      <td>{lead.email}</td>
+                      <td>{lead.message}</td>
+                      <td>{lead.displayDate}</td>
+                      <td className="admin-actions">
+                        <EditLeadButton
+                          lead={lead}
+                          onEdit={handleOpenEditModal}
+                        />
 
-            <span>{paginationLabel}</span>
+                        <DeleteLeadButton
+                          leadId={lead.id}
+                          onDelete={handleRequestDeleteLead}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-            <button
-              type="button"
-              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-              disabled={page === totalPages}
-            >
-              Next
-            </button>
-          </div>
+            {!loading && !error && totalCount > 0 && (
+              <div className="admin-pagination">
+                <button
+                  type="button"
+                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={page === 1}
+                >
+                  Previous
+                </button>
+
+                <span>{paginationLabel}</span>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={page === totalPages}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         )}
 
-        {/* Dynamic Controlled Popup Form Dialog Element */}
         <EditLeadModal
           key={editingLead?.id || "no-lead"}
           lead={editingLead}

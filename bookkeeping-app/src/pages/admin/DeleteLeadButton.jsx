@@ -4,6 +4,7 @@ export default function DeleteLeadButton({ leadId, onDelete }) {
       type="button"
       className="admin-danger-button"
       onClick={() => onDelete(leadId)}
+      aria-label="Delete lead"
     >
       Delete
     </button>
