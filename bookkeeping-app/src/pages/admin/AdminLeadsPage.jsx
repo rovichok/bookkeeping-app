@@ -10,6 +10,7 @@ import ConfirmModal from "./ConfirmModal";
 import AdminToast from "./AdminToast";
 import LeadTableSkeleton from "./LeadTableSkeleton";
 import AdminEmptyState from "./AdminEmptyState";
+import AdminStatsCards from "./AdminStatsCards";
 
 const API_URL = "https://localhost:7239/api/leads";
 
@@ -272,6 +273,8 @@ export default function AdminLeadsPage() {
           title="Contact Leads"
           text="Review contact form submissions from Lentis visitors."
         />
+
+        <AdminStatsCards totalCount={totalCount} leads={leads} />
 
         <div className="admin-toolbar">
           <input
