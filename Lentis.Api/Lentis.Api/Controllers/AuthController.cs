@@ -16,10 +16,12 @@ namespace Lentis.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IConfiguration _configuration;
+    private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IConfiguration configuration)
+    public AuthController(IConfiguration configuration, ILogger<AuthController> logger)
     {
         _configuration = configuration;
+        _logger = logger;
     }
 
     [EnableRateLimiting("AdminLoginPolicy")]
@@ -40,7 +42,14 @@ public class AuthController : ControllerBase
 
         if (request.Email != adminEmail)
         {
-            return Unauthorized(new { message = "Invalid email or password." });
+            _logger.LogWarning(
+                "Failed admin login attempt for {Email}",
+                request.Email
+            );
+            return Unauthorized(new
+            {
+                message = "Invalid email or password."
+            });
         }
 
         bool isValidPassword = BCrypt.Net.BCrypt.Verify(
@@ -50,10 +59,23 @@ public class AuthController : ControllerBase
 
         if (!isValidPassword)
         {
-            return Unauthorized(new { message = "Invalid email or password." });
+            _logger.LogWarning(
+            "Failed admin password verification for {Email}",
+            request.Email
+            );
+
+            return Unauthorized(new
+            {
+                message = "Invalid email or password."
+            });
         }
 
         var token = CreateToken(request.Email);
+
+        _logger.LogInformation(
+            "Admin login successful for {Email}",
+            request.Email
+        );
 
         Response.Cookies.Append("lentis_admin", token, new CookieOptions
         {
