@@ -6,7 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Resend;
 using System.Text;
 using System.Threading.RateLimiting;
-using YourNamespace.Middleware;
+using Lentis.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,7 +37,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-// --- 4. RATE LIMITING ---
 // --- 4. RATE LIMITING ---
 builder.Services.AddRateLimiter(options =>
 {

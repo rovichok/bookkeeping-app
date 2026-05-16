@@ -3,12 +3,14 @@ using Lentis.Api.Models;
 using Lentis.Api.Models.Dto.Leads;
 using Microsoft.AspNetCore.Authorization;
 
+
+// using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Resend;
-using System.Linq;
-
+using System.Net;
+using System.Xml.Linq;
 
 
 namespace Lentis.Api.Controllers;
@@ -32,9 +34,19 @@ public class ContactController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Submit([FromBody] CreateLeadDto request)
     {
-        var name = request.Name.Trim();
-        var emailAddress = request.Email.Trim();
-        var message = request.Message.Trim();
+        var name = request.Name?.Trim();
+        var emailAddress = request.Email?.Trim();
+        var message = request.Message?.Trim();
+
+        if (string.IsNullOrWhiteSpace(name) ||
+            string.IsNullOrWhiteSpace(emailAddress) ||
+            string.IsNullOrWhiteSpace(message))
+        {
+            return BadRequest(new
+            {
+                message = "Name, email, and message are required."
+            });
+        }
 
         // Block bots silently 
         if (!string.IsNullOrWhiteSpace(request.Website))
@@ -55,32 +67,24 @@ public class ContactController : ControllerBase
             CreatedAtUtc = DateTime.UtcNow
         };
 
-        // Log inbound contact form submissions for monitoring and diagnostics
-        _logger.LogInformation(
-            "Processing contact form submission from {Email}",
-            emailAddress
-        );
-
         _db.Leads.Add(lead);
         await _db.SaveChangesAsync();
 
-        // Record successful lead creation for audit and diagnostics
-        _logger.LogInformation(
-             "Lead {LeadId} created successfully for {Email}",
-              lead.Id,
-              emailAddress
-        );
+        var safeName = WebUtility.HtmlEncode(name);
+        var safeEmail = WebUtility.HtmlEncode(emailAddress);
+        var safeMessage = WebUtility.HtmlEncode(message);
+
         var emailMessage = new EmailMessage
         {
             From = "Lentis <onboarding@resend.dev>",
             Subject = "New Contact Form Submission",
             HtmlBody = $@"
-                    <h2>New Contact Submission</h2>
-                    <p><strong>Name:</strong> {name}</p>
-                    <p><strong>Email:</strong> {emailAddress}</p>
-                    <p><strong>Message:</strong></p>
-                    <p>{message}</p>
-                "
+            <h2>New Contact Submission</h2>
+            <p><strong>Name:</strong> {safeName}</p>
+            <p><strong>Email:</strong> {safeEmail}</p>
+            <p><strong>Message:</strong></p>
+            <p>{safeMessage}</p>
+        "
         };
 
         emailMessage.To.Add("ayoghagborbesong@gmail.com");
@@ -91,12 +95,6 @@ public class ContactController : ControllerBase
 
             await _resend.EmailSendAsync(emailMessage);
 
-            // Track successful outbound notification email delivery for lead follow-up visibility
-            _logger.LogInformation(
-                "Notification email sent successfully for lead {LeadId}",
-                lead.Id
-            );
-
             return Ok(new
             {
                 message = "Message received and email sent."
@@ -104,15 +102,11 @@ public class ContactController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(
-                ex,
-                "Contact form processing failed for {Email}",
-                emailAddress
-            );
+            _logger.LogError(ex, "Error sending contact email");
 
             return StatusCode(500, new
             {
-                message = "Something went wrong while sending your message.",
+                message = "Message received, but email notification failed.",
                 errorCode = "EMAIL_SERVICE_FAILURE",
                 timestamp = DateTime.UtcNow
             });
@@ -128,12 +122,10 @@ public class ContactController : ControllerBase
 public class LeadsController : ControllerBase
 {
     private readonly AppDbContext _db;
-    private readonly ILogger<LeadsController> _logger;
 
-    public LeadsController(AppDbContext db, ILogger<LeadsController> logger)
+    public LeadsController(AppDbContext db)
     {
         _db = db;
-        _logger = logger;
     }
 
     [HttpGet]
@@ -150,7 +142,7 @@ public class LeadsController : ControllerBase
         pageSize = Math.Clamp(pageSize, 1, 50);
 
         // Read-only query optimization
-        IQueryable<Lead> query = _db.Leads.AsNoTracking();
+        var query = _db.Leads.AsNoTracking();
 
         // ---------------------------
         // SEARCH
@@ -264,11 +256,6 @@ public class LeadsController : ControllerBase
 
         // 3. Persist down to SQL database
         await _db.SaveChangesAsync();
-        // Record successful admin lead modifications for audit tracking
-        _logger.LogInformation(
-            "Lead {LeadId} updated successfully by admin",
-            id
-        );
 
         // 4. Return the standardized LeadDetailsDto response
         var response = new LeadDetailsDto(
@@ -330,12 +317,6 @@ public class LeadsController : ControllerBase
         {
             return NotFound(new { message = $"Lead with ID {id} not found." });
         }
-
-        // Record destructive admin actions for auditing and diagnostics
-        _logger.LogWarning(
-            "Lead {LeadId} deleted by admin",
-            id
-        );
 
         // Returns a clean 204 No Content success response
         return NoContent();
