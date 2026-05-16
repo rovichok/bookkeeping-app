@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Text.Json;
 
-namespace YourNamespace.Middleware;
+namespace Lentis.Api.Middleware;
 
 public class ExceptionMiddleware
 {
@@ -24,7 +24,12 @@ public class ExceptionMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unhandled exception occurred.");
+            _logger.LogError(
+                ex,
+                "Unhandled exception for {Method} {Path}",
+                 context.Request.Method,
+                 context.Request.Path
+            );
 
             context.Response.ContentType = "application/json";
             context.Response.StatusCode =
@@ -32,12 +37,8 @@ public class ExceptionMiddleware
 
             var response = new
             {
-                message = ex.Message,
-                detail = ex.ToString(),
+                message = "An unexpected server error occurred.",
                 statusCode = context.Response.StatusCode
-
-                //message = "An unexpected server error occurred.",
-                //statusCode = context.Response.StatusCode
             };
 
             var json = JsonSerializer.Serialize(response);
