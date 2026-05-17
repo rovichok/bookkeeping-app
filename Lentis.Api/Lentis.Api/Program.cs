@@ -10,6 +10,8 @@ using Lentis.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
+Console.WriteLine($"ENVIRONMENT: {builder.Environment.EnvironmentName}");
+
 // --- 1. CORE SERVICES ---
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -24,13 +26,18 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString);
 });
 
-// --- 3. CORS CONFIGURATION (Critical for Cookies) ---
+// --- 3. CORS CONFIGURATION -- Environment Based -- (Critical for Cookies) ---
+// --- 3. CORS CONFIGURATION (Environment-Based) ---
+
+var allowedOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>() ?? Array.Empty<string>();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
     {
-        // Explicitly allow your React dev server
-        policy.WithOrigins("http://localhost:5173", "https://localhost:5173")
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials(); // Required for HttpOnly cookies
@@ -77,6 +84,7 @@ var resendApiToken = builder.Configuration["RESEND_APITOKEN"]
 
 builder.Services.Configure<ResendClientOptions>(options => { options.ApiToken = resendApiToken; });
 builder.Services.AddTransient<IResend, ResendClient>();
+builder.Services.AddHealthChecks();
 
 // --- 6. AUTHENTICATION & JWT (Configured to read from Cookie) ---
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is missing.");
@@ -137,14 +145,16 @@ app.UseRouting();
 // D. CORS
 app.UseCors("Frontend");
 
-// E. Rate Limiting
-app.UseRateLimiter();
-
-// F. Security & Identity
+// E. Security & Identity
 app.UseAuthentication();
 app.UseAuthorization();
 
+// F. Rate Limiting
+app.UseRateLimiter();
+
 // G. Execution
 app.MapControllers();
+
+app.MapHealthChecks("/health");
 
 app.Run();
