@@ -12,6 +12,10 @@ using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure logging providers
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
 // --- ENVIRONMENT LOGGING ---
 Console.WriteLine($"ENVIRONMENT: {builder.Environment.EnvironmentName}");
 
@@ -205,7 +209,14 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
+// Builds the configured application instance
 var app = builder.Build();
+
+// Logs the API startup message and current environment
+app.Logger.LogInformation(
+    "Lentis API starting in {Environment} mode",
+    app.Environment.EnvironmentName);
+
 
 // --- 7. MIDDLEWARE PIPELINE (The Order Matters!) ---
 
