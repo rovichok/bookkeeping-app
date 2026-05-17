@@ -12,6 +12,10 @@ using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure logging providers
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
 // --- ENVIRONMENT LOGGING ---
 Console.WriteLine($"ENVIRONMENT: {builder.Environment.EnvironmentName}");
 
@@ -205,21 +209,38 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
+// Builds the configured application instance
 var app = builder.Build();
+
+// Logs the API startup message and current environment
+app.Logger.LogInformation(
+    "Lentis API starting in {Environment} mode",
+    app.Environment.EnvironmentName);
+
 
 // --- 7. MIDDLEWARE PIPELINE (The Order Matters!) ---
 
 // A. Global Error Handling
 app.UseMiddleware<ExceptionMiddleware>();
 
-// B. Swagger
+// B. Security Headers (ADD IT HERE)
+app.UseMiddleware<SecurityHeadersMiddleware>();
+
+// C. Swagger
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// C. Protocol and Routing
+// D. HSTS should only run outside development.
+//    It tells browsers to use HTTPS only for future requests.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
+
+// E. Protocol and Routing
 app.UseHttpsRedirection();
 app.UseRouting();
 
