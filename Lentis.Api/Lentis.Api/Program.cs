@@ -10,7 +10,51 @@ using Lentis.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// --- ENVIRONMENT LOGGING ---
 Console.WriteLine($"ENVIRONMENT: {builder.Environment.EnvironmentName}");
+
+// --- SECURE CONFIG VALIDATION ---
+
+var jwtKey = builder.Configuration["Jwt:Key"];
+var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+var jwtAudience = builder.Configuration["Jwt:Audience"];
+
+var adminEmail = builder.Configuration["AdminCredentials:Email"];
+
+var adminPasswordHash =
+    builder.Configuration["AdminCredentials:PasswordHash"];
+
+var resendApiToken = builder.Configuration["Resend:ApiToken"];
+
+if (string.IsNullOrWhiteSpace(jwtKey))
+{
+    throw new InvalidOperationException("Jwt:Key is not configured.");
+}
+
+if (string.IsNullOrWhiteSpace(jwtIssuer))
+{
+    throw new InvalidOperationException("Jwt:Issuer is not configured.");
+}
+
+if (string.IsNullOrWhiteSpace(jwtAudience))
+{
+    throw new InvalidOperationException("Jwt:Audience is not configured.");
+}
+
+if (string.IsNullOrWhiteSpace(adminEmail))
+{
+    throw new InvalidOperationException("Admin email is not configured.");
+}
+
+if (string.IsNullOrWhiteSpace(adminPasswordHash))
+{
+    throw new InvalidOperationException("Admin password hash is not configured.");
+}
+
+if (string.IsNullOrWhiteSpace(resendApiToken))
+{
+    throw new InvalidOperationException("Resend API token is not configured.");
+}
 
 // --- 1. CORE SERVICES ---
 builder.Services.AddControllers();
@@ -26,8 +70,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString);
 });
 
-// --- 3. CORS CONFIGURATION -- Environment Based -- (Critical for Cookies) ---
-// --- 3. CORS CONFIGURATION (Environment-Based) ---
+// --- 3. CORS CONFIGURATION -- Environment Based -- (Critical for Cookies) --
 
 var allowedOrigins = builder.Configuration
     .GetSection("Cors:AllowedOrigins")
@@ -79,17 +122,14 @@ builder.Services.AddRateLimiter(options =>
 // --- 5. EXTERNAL SERVICES (Resend) ---
 builder.Services.AddOptions();
 builder.Services.AddHttpClient<ResendClient>();
-var resendApiToken = builder.Configuration["RESEND_APITOKEN"]
-    ?? throw new InvalidOperationException("RESEND_APITOKEN is missing.");
 
-builder.Services.Configure<ResendClientOptions>(options => { options.ApiToken = resendApiToken; });
+builder.Services.Configure<ResendClientOptions>(options => 
+{ 
+    options.ApiToken = resendApiToken; 
+});
+
 builder.Services.AddTransient<IResend, ResendClient>();
 builder.Services.AddHealthChecks();
-
-// --- 6. AUTHENTICATION & JWT (Configured to read from Cookie) ---
-var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is missing.");
-var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? throw new InvalidOperationException("Jwt:Issuer is missing.");
-var jwtAudience = builder.Configuration["Jwt:Audience"] ?? throw new InvalidOperationException("Jwt:Audience is missing.");
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
