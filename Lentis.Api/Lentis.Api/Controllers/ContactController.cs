@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Resend;
+using Lentis.Api.Responses;
 using System.Linq;
 
 
@@ -41,9 +42,10 @@ public class ContactController : ControllerBase
         {
             _logger.LogWarning("Honeypot triggered on contact form.");
 
-            return Ok(new
+            return Ok(new ApiResponse<object>
             {
-                message = "Message received successfully."
+                Success = true,
+                Message = "Lead submitted successfully."
             });
         }
 
@@ -97,9 +99,10 @@ public class ContactController : ControllerBase
                 lead.Id
             );
 
-            return Ok(new
+            return Ok(new ApiResponse<object>
             {
-                message = "Message received and email sent."
+                Success = true,
+                Message = "Lead submitted successfully."
             });
         }
         catch (Exception ex)
@@ -110,11 +113,15 @@ public class ContactController : ControllerBase
                 emailAddress
             );
 
-            return StatusCode(500, new
+            return StatusCode(500, new ApiResponse<object>
             {
-                message = "Something went wrong while sending your message.",
-                errorCode = "EMAIL_SERVICE_FAILURE",
-                timestamp = DateTime.UtcNow
+                Success = false,
+                Message = "Something went wrong while sending your message.",
+                Errors = new
+                {
+                    ErrorCode = "EMAIL_SERVICE_FAILURE",
+                    Timestamp = DateTime.UtcNow
+                }
             });
         }
     }
@@ -240,7 +247,12 @@ public class LeadsController : ControllerBase
             totalPages
         );
 
-        return Ok(response);
+        return Ok(new ApiResponse<PagedResponseDto<LeadDetailsDto>>
+        {
+            Success = true,
+            Message = "Leads retrieved successfully.",
+            Data = response
+        });
     }
 
     // New code
@@ -254,7 +266,11 @@ public class LeadsController : ControllerBase
 
         if (lead == null)
         {
-            return NotFound(new { message = $"Lead with ID {id} not found." });
+            return NotFound(new ApiResponse<object>
+            {
+                Success = false,
+                Message = $"Lead with ID {id} not found."
+            });
         }
 
         // 2. Map safe fields from incoming UpdateLeadDto
@@ -279,7 +295,12 @@ public class LeadsController : ControllerBase
             lead.CreatedAtUtc
         );
 
-        return Ok(response);
+        return Ok(new ApiResponse<LeadDetailsDto>
+        {
+            Success = true,
+            Message = "Lead retrieved successfully.",
+            Data = response
+        });
     }
 
 
@@ -328,7 +349,11 @@ public class LeadsController : ControllerBase
         // If no rows were changed, the ID did not exist in the database
         if (rowsAffected == 0)
         {
-            return NotFound(new { message = $"Lead with ID {id} not found." });
+            return NotFound(new ApiResponse<object>
+            {
+                Success = false,
+                Message = $"Lead with ID {id} not found."
+            });
         }
 
         // Record destructive admin actions for auditing and diagnostics
