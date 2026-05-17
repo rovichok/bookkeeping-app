@@ -1,12 +1,14 @@
 using Lentis.Api.Data;
+using Lentis.Api.Middleware;
+using Lentis.Api.Responses;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Resend;
 using System.Text;
 using System.Threading.RateLimiting;
-using Lentis.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,6 +60,45 @@ if (string.IsNullOrWhiteSpace(resendApiToken))
 
 // --- 1. CORE SERVICES ---
 builder.Services.AddControllers();
+
+// --- CUSTOM VALIDATION RESPONSE NORMALIZATION ---
+// [ApiController] automatically validates DTOs before controller actions run.
+// By default, ASP.NET Core returns a large built-in validation payload.
+//
+// We override that default behavior here so the API always returns
+// our standardized ApiResponse<T> structure.
+//
+// This keeps frontend handling consistent across:
+// - validation errors
+// - authentication errors
+// - normal success responses
+// - server failures
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        // Extract validation errors from ModelState
+        var errors = context.ModelState
+            .Where(x => x.Value?.Errors.Count > 0)
+            .ToDictionary(
+                kvp => kvp.Key,
+                kvp => kvp.Value!.Errors
+                    .Select(e => e.ErrorMessage)
+                    .ToArray()
+            );
+
+        // Create standardized API response
+        var response = new ApiResponse<object>
+        {
+            Success = false,
+            Message = "Validation failed.",
+            Errors = errors
+        };
+
+        return new BadRequestObjectResult(response);
+    };
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
