@@ -212,14 +212,24 @@ var app = builder.Build();
 // A. Global Error Handling
 app.UseMiddleware<ExceptionMiddleware>();
 
-// B. Swagger
+// B. Security Headers (ADD IT HERE)
+app.UseMiddleware<SecurityHeadersMiddleware>();
+
+// C. Swagger
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// C. Protocol and Routing
+// D. HSTS should only run outside development.
+//    It tells browsers to use HTTPS only for future requests.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
+
+// E. Protocol and Routing
 app.UseHttpsRedirection();
 app.UseRouting();
 
