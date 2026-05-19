@@ -26,6 +26,8 @@ Console.WriteLine($"Admin Hash Exists: {!string.IsNullOrEmpty(builder.Configurat
 Console.WriteLine($"Connection String Exists: {!string.IsNullOrEmpty(builder.Configuration.GetConnectionString("DefaultConnection"))}");
 
 Console.WriteLine($"Allowed Origin Exists: {!string.IsNullOrEmpty(builder.Configuration["AllowedOrigins:Frontend"])}");
+Console.WriteLine($"JWT Issuer Exists: {!string.IsNullOrEmpty(builder.Configuration["Jwt:Issuer"])}");
+Console.WriteLine($"JWT Audience Exists: {!string.IsNullOrEmpty(builder.Configuration["Jwt:Audience"])}");
 
 Console.WriteLine("=== END STARTUP DEBUG ===");
 // --- END OF RENDER DEBUGGING --- //
