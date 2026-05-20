@@ -11,8 +11,10 @@ import AdminToast from "./AdminToast";
 import LeadTableSkeleton from "./LeadTableSkeleton";
 import AdminEmptyState from "./AdminEmptyState";
 import AdminStatsCards from "./AdminStatsCards";
+import { API_BASE_URL } from "../../apiConfig";
 
-const API_URL = "https://localhost:7239/api/leads";
+//const API_URL = "https://localhost:7239/api/leads";
+const API_URL = `${API_BASE_URL}/api/leads`;
 
 const COLUMNS = [
   { key: "name", label: "Name" },

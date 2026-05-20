@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AuthContext } from "./AuthContext";
+import { API_BASE_URL } from "../apiConfig";
 
 // Backend endpoints for checking session and logging out
-const AUTH_ME_URL = "https://localhost:7239/api/auth/me";
-const LOGOUT_URL = "https://localhost:7239/api/auth/logout";
+// const AUTH_ME_URL = "https://localhost:7239/api/auth/me";
+// const LOGOUT_URL = "https://localhost:7239/api/auth/logout";
+const AUTH_ME_URL = `${API_BASE_URL}/api/auth/me`;
+const LOGOUT_URL = `${API_BASE_URL}/api/auth/logout`;
 
 export function AuthProvider({ children }) {
   // tracks if the user is currently logged in

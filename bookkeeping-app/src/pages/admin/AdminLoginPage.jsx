@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { API_BASE_URL } from "../../apiConfig";
 
-const API_URL = "https://localhost:7239/api/auth/login";
+//const API_URL = "https://localhost:7239/api/auth/login";
+const API_URL = `${API_BASE_URL}/api/auth/login`;
 
 export default function AdminLoginPage() {
   const [formData, setFormData] = useState({
