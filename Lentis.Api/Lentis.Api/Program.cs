@@ -13,11 +13,11 @@ using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
-<<<<<<< HEAD
+
 // Configure logging providers
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
-=======
+
 // --- START OF RENDER DEBUGGING --- //
 Console.WriteLine("=== STARTUP DEBUG ===");
 
@@ -37,7 +37,7 @@ Console.WriteLine($"JWT Audience Exists: {!string.IsNullOrEmpty(builder.Configur
 
 Console.WriteLine("=== END STARTUP DEBUG ===");
 // --- END OF RENDER DEBUGGING --- //
->>>>>>> feature/production-deployment
+
 
 // --- ENVIRONMENT LOGGING ---
 Console.WriteLine($"ENVIRONMENT: {builder.Environment.EnvironmentName}");
@@ -232,15 +232,6 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
-<<<<<<< HEAD
-// Builds the configured application instance
-var app = builder.Build();
-
-// Logs the API startup message and current environment
-app.Logger.LogInformation(
-    "Lentis API starting in {Environment} mode",
-    app.Environment.EnvironmentName);
-=======
 // Configure app to accept forwarded headers from reverse proxies (like Nginx, Apache, or AWS ALB)
 // Clears KnownNetworks and KnownProxies to trust all upstream proxies (required if proxy IPs change)
 builder.Services.Configure<ForwardedHeadersOptions>(options => {
@@ -249,12 +240,17 @@ builder.Services.Configure<ForwardedHeadersOptions>(options => {
     options.KnownProxies.Clear();
 });
 
+// Builds the configured application instance
 var app = builder.Build();
 
 // Enable the forwarded headers middleware to process headers configured above
 // This must run before authentication, authorization, or routing middlewares
 app.UseForwardedHeaders();
->>>>>>> feature/production-deployment
+
+// Logs the API startup message and current environment
+app.Logger.LogInformation(
+    "Lentis API starting in {Environment} mode",
+    app.Environment.EnvironmentName);
 
 
 // --- 7. MIDDLEWARE PIPELINE (The Order Matters!) ---

@@ -82,6 +82,7 @@ public class AuthController : ControllerBase
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.None,
+            Domain = ".lentisgroup.com",
             Expires = DateTimeOffset.UtcNow.AddHours(2),
             Path = "/"
         });
