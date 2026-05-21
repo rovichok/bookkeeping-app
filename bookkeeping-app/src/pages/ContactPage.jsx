@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../apiConfig";
 import { useState } from "react";
 import SectionHeader from "../components/ui/SectionHeader";
 import Button from "../components/ui/Button";
@@ -35,7 +36,7 @@ export default function ContactPage() {
     });
 
     try {
-      const response = await fetch("https://localhost:7239/api/contact", {
+      const response = await fetch(`${API_BASE_URL}/api/contact`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

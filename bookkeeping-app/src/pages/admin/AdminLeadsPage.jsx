@@ -11,8 +11,10 @@ import AdminToast from "./AdminToast";
 import LeadTableSkeleton from "./LeadTableSkeleton";
 import AdminEmptyState from "./AdminEmptyState";
 import AdminStatsCards from "./AdminStatsCards";
+import { API_BASE_URL } from "../../apiConfig";
 
-const API_URL = "https://localhost:7239/api/leads";
+//const API_URL = "https://localhost:7239/api/leads";
+const API_URL = `${API_BASE_URL}/api/leads`;
 
 const COLUMNS = [
   { key: "name", label: "Name" },
@@ -93,20 +95,24 @@ export default function AdminLeadsPage() {
           throw new Error("Unable to load leads.");
         }
 
-        const data = await response.json();
+        const result = await response.json();
 
-        if (!Array.isArray(data.items)) {
+        if (
+          !result.success ||
+          !result.data ||
+          !Array.isArray(result.data.items)
+        ) {
           throw new Error("Invalid leads response.");
         }
 
-        const formattedLeads = data.items.map((lead) => ({
+        const formattedLeads = result.data.items.map((lead) => ({
           ...lead,
           displayDate: new Date(lead.createdAtUtc).toLocaleString(),
         }));
 
         setLeads(formattedLeads);
-        setTotalCount(data.totalCount ?? 0);
-        setTotalPages(data.totalPages ?? 1);
+        setTotalCount(result.data.totalCount ?? 0);
+        setTotalPages(result.data.totalPages ?? 1);
       } catch (error) {
         if (error.name === "AbortError") return;
         setError(error.message || "Something went wrong.");

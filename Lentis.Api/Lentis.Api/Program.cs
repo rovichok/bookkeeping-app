@@ -9,12 +9,35 @@ using Microsoft.IdentityModel.Tokens;
 using Resend;
 using System.Text;
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
+<<<<<<< HEAD
 // Configure logging providers
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
+=======
+// --- START OF RENDER DEBUGGING --- //
+Console.WriteLine("=== STARTUP DEBUG ===");
+
+Console.WriteLine($"Environment: {builder.Environment.EnvironmentName}");
+
+Console.WriteLine($"JWT Key Exists: {!string.IsNullOrEmpty(builder.Configuration["Jwt:Key"])}");
+
+Console.WriteLine($"Admin Email Exists: {!string.IsNullOrEmpty(builder.Configuration["AdminCredentials:Email"])}");
+
+Console.WriteLine($"Admin Hash Exists: {!string.IsNullOrEmpty(builder.Configuration["AdminCredentials:PasswordHash"])}");
+
+Console.WriteLine($"Connection String Exists: {!string.IsNullOrEmpty(builder.Configuration.GetConnectionString("DefaultConnection"))}");
+
+Console.WriteLine($"Allowed Origin Exists: {!string.IsNullOrEmpty(builder.Configuration["AllowedOrigins:Frontend"])}");
+Console.WriteLine($"JWT Issuer Exists: {!string.IsNullOrEmpty(builder.Configuration["Jwt:Issuer"])}");
+Console.WriteLine($"JWT Audience Exists: {!string.IsNullOrEmpty(builder.Configuration["Jwt:Audience"])}");
+
+Console.WriteLine("=== END STARTUP DEBUG ===");
+// --- END OF RENDER DEBUGGING --- //
+>>>>>>> feature/production-deployment
 
 // --- ENVIRONMENT LOGGING ---
 Console.WriteLine($"ENVIRONMENT: {builder.Environment.EnvironmentName}");
@@ -209,6 +232,7 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
+<<<<<<< HEAD
 // Builds the configured application instance
 var app = builder.Build();
 
@@ -216,6 +240,21 @@ var app = builder.Build();
 app.Logger.LogInformation(
     "Lentis API starting in {Environment} mode",
     app.Environment.EnvironmentName);
+=======
+// Configure app to accept forwarded headers from reverse proxies (like Nginx, Apache, or AWS ALB)
+// Clears KnownNetworks and KnownProxies to trust all upstream proxies (required if proxy IPs change)
+builder.Services.Configure<ForwardedHeadersOptions>(options => {
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
+var app = builder.Build();
+
+// Enable the forwarded headers middleware to process headers configured above
+// This must run before authentication, authorization, or routing middlewares
+app.UseForwardedHeaders();
+>>>>>>> feature/production-deployment
 
 
 // --- 7. MIDDLEWARE PIPELINE (The Order Matters!) ---
