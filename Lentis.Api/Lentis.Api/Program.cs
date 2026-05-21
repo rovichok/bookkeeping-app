@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Resend;
 using System.Text;
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -225,7 +226,20 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
+// Configure app to accept forwarded headers from reverse proxies (like Nginx, Apache, or AWS ALB)
+// Clears KnownNetworks and KnownProxies to trust all upstream proxies (required if proxy IPs change)
+builder.Services.Configure<ForwardedHeadersOptions>(options => {
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 var app = builder.Build();
+
+// Enable the forwarded headers middleware to process headers configured above
+// This must run before authentication, authorization, or routing middlewares
+app.UseForwardedHeaders();
+
 
 // --- 7. MIDDLEWARE PIPELINE (The Order Matters!) ---
 
