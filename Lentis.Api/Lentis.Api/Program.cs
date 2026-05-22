@@ -277,6 +277,35 @@ if (!app.Environment.IsDevelopment())
 
 // E. Protocol and Routing
 app.UseHttpsRedirection();
+
+app.Use(async (context, next) =>
+{
+    // Prevent browsers from guessing/sniffing MIME types; forces compliance with declared Content-Type header.
+    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+
+    // Legacy clickjacking defense; prevents this site from being rendered inside an iframe on other domains.
+    context.Response.Headers["X-Frame-Options"] = "DENY";
+
+    // Highest privacy setting; strips the 'Referer' header completely so no URL data leaks to external sites.
+    context.Response.Headers["Referrer-Policy"] = "no-referrer";
+
+    // Disables browser hardware features (GPS, mic, camera) globally to protect user privacy.
+    context.Response.Headers["Permissions-Policy"] =
+        "geolocation=(), microphone=(), camera=()";
+
+    // Restricts where resources (scripts, styles, images) can be loaded from to prevent XSS.
+    context.Response.Headers["Content-Security-Policy"] =
+        "default-src 'self'; " + // Fallback rule: only trust resources from this exact origin.
+        "script-src 'self'; " +  // Only allow JavaScript execution from files hosted on this domain.
+        "style-src 'self' 'unsafe-inline'; " + // WARNING: 'unsafe-inline' allows inline styles, increasing CSS injection risks.
+        "img-src 'self' data: https:; " + // WARNING: 'https:' allows images from any secure site; too broad.
+        "connect-src 'self' https://lentisgroup.com https://lentisgroup.com; " + // Whitelists AJAX/Fetch API destinations.
+        "frame-ancestors 'none';"; // Modern clickjacking defense; supersedes X-Frame-Options by blocking all iframe embedding.
+
+    // Pass execution to the next middleware component in the ASP.NET Core pipeline.
+    await next();
+});
+
 app.UseRouting();
 
 // D. CORS
