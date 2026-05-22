@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { API_BASE_URL } from "../../apiConfig";
 
@@ -17,12 +17,13 @@ export default function AdminLoginPage() {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth(); // Grabbing the login function from your AuthContext
+  const { login, isAuthenticated, authChecked } = useAuth(); // Grabbing the login function from your AuthContext
 
   // SMART REDIRECT:
   // If the user was kicked here from a protected page, location.state.from
   // holds that URL. If they came here directly, default to the leads page.
-  const from = location.state?.from?.pathname || "/admin/leads";
+  const redirectPath = location.state?.from?.pathname || "/admin/leads";
+  const from = redirectPath === "/admin/login" ? "/admin/leads" : redirectPath;
 
   // Updates form state as the user types
   function handleChange(e) {
@@ -59,7 +60,7 @@ export default function AdminLoginPage() {
       }
 
       // Update React state so the app knows we are now authenticated
-      login();
+      await login();
 
       // Send the user to their destination and 'replace: true'
       // prevents them from clicking "back" to the login form.
@@ -69,6 +70,14 @@ export default function AdminLoginPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (!authChecked) {
+    return null;
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to={from} replace />;
   }
 
   return (

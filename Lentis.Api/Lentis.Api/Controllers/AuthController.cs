@@ -82,7 +82,7 @@ public class AuthController : ControllerBase
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.None,
-            Domain = ".lentisgroup.com",
+            Domain = "lentisgroup.com",
             Expires = DateTimeOffset.UtcNow.AddHours(2),
             Path = "/"
         });
@@ -149,6 +149,7 @@ public class AuthController : ControllerBase
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.None,
+            Domain = "lentisgroup.com",
             Path = "/" // MUST match the path used when the cookie was created
         });
 
