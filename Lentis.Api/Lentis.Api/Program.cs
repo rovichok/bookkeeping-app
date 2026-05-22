@@ -299,7 +299,7 @@ app.Use(async (context, next) =>
         "script-src 'self'; " +  // Only allow JavaScript execution from files hosted on this domain.
         "style-src 'self' 'unsafe-inline'; " + // WARNING: 'unsafe-inline' allows inline styles, increasing CSS injection risks.
         "img-src 'self' data: https:; " + // WARNING: 'https:' allows images from any secure site; too broad.
-        "connect-src 'self' https://lentisgroup.com https://lentisgroup.com; " + // Whitelists AJAX/Fetch API destinations.
+        "connect-src 'self' https://admin.lentisgroup.com https://api.lentisgroup.com; " + // Whitelists AJAX/Fetch API destinations.
         "frame-ancestors 'none';"; // Modern clickjacking defense; supersedes X-Frame-Options by blocking all iframe embedding.
 
     // Pass execution to the next middleware component in the ASP.NET Core pipeline.
