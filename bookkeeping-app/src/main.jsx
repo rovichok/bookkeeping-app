@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import { RouterProvider } from "react-router-dom"; // provides routing to the whole app
 import router from "./app/router"; // our centralized route definitions
 import { AuthProvider } from "./context/AuthProvider"; // Path to the file we just optimized
-import * as Sentry from "@sentry/browser"; // Initialize Sentry for front-end error tracking and performance monitoring
+import * as Sentry from "@sentry/react"; // Initialize Sentry for front-end error tracking and performance monitoring
 
 // Global CSS files.
 // Separate styles by concern.
