@@ -2,16 +2,26 @@ using Lentis.Api.Data;
 using Lentis.Api.Middleware;
 using Lentis.Api.Responses;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Resend;
+using Serilog;
 using System.Text;
 using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configures Serilog as the logging provider, reading settings from appsettings.json and logging to the console.
+builder.Host.UseSerilog((context, configuration) =>
+{
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .Enrich.FromLogContext()
+        .WriteTo.Console();
+});
 
 
 // Configure logging providers
@@ -310,6 +320,10 @@ app.UseRouting();
 
 // D. CORS
 app.UseCors("Frontend");
+
+// Compress HTTP request logs into a single summary event.
+// Captures full endpoint/CORS routing data but executes before auth/rate limits drop requests.
+app.UseSerilogRequestLogging();
 
 // E. Security & Identity
 app.UseAuthentication();
