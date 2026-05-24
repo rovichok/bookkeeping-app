@@ -23,37 +23,11 @@ builder.Host.UseSerilog((context, configuration) =>
         .WriteTo.Console();
 });
 
-
 // Configure logging providers
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
-// --- START OF RENDER DEBUGGING --- //
-Console.WriteLine("=== STARTUP DEBUG ===");
-
-Console.WriteLine($"Environment: {builder.Environment.EnvironmentName}");
-
-Console.WriteLine($"JWT Key Exists: {!string.IsNullOrEmpty(builder.Configuration["Jwt:Key"])}");
-
-Console.WriteLine($"Admin Email Exists: {!string.IsNullOrEmpty(builder.Configuration["AdminCredentials:Email"])}");
-
-Console.WriteLine($"Admin Hash Exists: {!string.IsNullOrEmpty(builder.Configuration["AdminCredentials:PasswordHash"])}");
-
-Console.WriteLine($"Connection String Exists: {!string.IsNullOrEmpty(builder.Configuration.GetConnectionString("DefaultConnection"))}");
-
-Console.WriteLine($"Allowed Origin Exists: {!string.IsNullOrEmpty(builder.Configuration["AllowedOrigins:Frontend"])}");
-Console.WriteLine($"JWT Issuer Exists: {!string.IsNullOrEmpty(builder.Configuration["Jwt:Issuer"])}");
-Console.WriteLine($"JWT Audience Exists: {!string.IsNullOrEmpty(builder.Configuration["Jwt:Audience"])}");
-
-Console.WriteLine("=== END STARTUP DEBUG ===");
-// --- END OF RENDER DEBUGGING --- //
-
-
-// --- ENVIRONMENT LOGGING ---
-Console.WriteLine($"ENVIRONMENT: {builder.Environment.EnvironmentName}");
-
 // --- SECURE CONFIG VALIDATION ---
-
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 var jwtAudience = builder.Configuration["Jwt:Audience"];
