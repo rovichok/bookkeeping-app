@@ -3,11 +3,11 @@ name: Frontend Build Check
 on:
   push:
     paths:
-      - "lentis-admin/**"
+      - "bookkeeping-app/**"
       - ".github/workflows/frontend.yml"
   pull_request:
     paths:
-      - "lentis-admin/**"
+      - "bookkeeping-app/**"
 
 jobs:
   build:
@@ -15,7 +15,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: lentis-admin
+        working-directory: bookkeeping-app
 
     steps:
       - name: Checkout repository
