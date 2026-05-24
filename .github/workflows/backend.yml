@@ -1,0 +1,33 @@
+name: Backend Build Check
+
+on:
+  push:
+    paths:
+      - "Lentis.Api/**"
+      - ".github/workflows/backend.yml"
+  pull_request:
+    paths:
+      - "Lentis.Api/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: Lentis.Api
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build backend
+        run: dotnet build --no-restore
