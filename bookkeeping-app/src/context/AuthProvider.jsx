@@ -74,10 +74,14 @@ export function AuthProvider({ children }) {
     try {
       setError(null);
 
-      await fetch(LOGOUT_URL, {
+      const response = await fetch(LOGOUT_URL, {
         method: "POST",
         credentials: "include",
       });
+
+      if (!response.ok) {
+        console.warn("Logout request failed:", response.status);
+      }
     } finally {
       resetAuthState();
       setAuthChecked(true);
