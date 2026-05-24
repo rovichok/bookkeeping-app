@@ -1,4 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import App from "../App"; // top-level wrapper that renders Layout + Outlet
 import HomePage from "../pages/HomePage";
 import PricingPage from "../pages/PricingPage";
@@ -50,6 +51,12 @@ const router = createBrowserRouter([
             <AdminLeadsPage />
           </ProtectedRoute>
         ),
+      },
+
+      // route: /admin
+      {
+        path: "/admin",
+        element: <Navigate to="/admin/login" replace />,
       },
 
       // route: /admin/login
