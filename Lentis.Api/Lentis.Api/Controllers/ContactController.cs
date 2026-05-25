@@ -40,7 +40,10 @@ public class ContactController : ControllerBase
         // Block bots silently 
         if (!string.IsNullOrWhiteSpace(request.Website))
         {
-            _logger.LogWarning("Honeypot triggered on contact form.");
+            _logger.LogWarning(
+                "[Audit] Honeypot triggered on contact form from IP {IpAddress}",
+                HttpContext.Connection.RemoteIpAddress?.ToString()
+            );
 
             return Ok(new ApiResponse<object>
             {
@@ -68,9 +71,9 @@ public class ContactController : ControllerBase
 
         // Record successful lead creation for audit and diagnostics
         _logger.LogInformation(
-             "Lead {LeadId} created successfully for {Email}",
-              lead.Id,
-              emailAddress
+            "[Audit] Lead {LeadId} created successfully for {Email}",
+            lead.Id,
+            emailAddress
         );
         var emailMessage = new EmailMessage
         {
@@ -89,13 +92,16 @@ public class ContactController : ControllerBase
 
         try
         {
-            _logger.LogInformation("Contact form submitted by {Email}", emailAddress);
+            _logger.LogInformation(
+                "[Audit] Contact form submitted by {Email}",
+                emailAddress
+            );
 
             await _resend.EmailSendAsync(emailMessage);
 
             // Track successful outbound notification email delivery for lead follow-up visibility
             _logger.LogInformation(
-                "Notification email sent successfully for lead {LeadId}",
+                "[Audit] Notification email sent successfully for lead {LeadId}",
                 lead.Id
             );
 
