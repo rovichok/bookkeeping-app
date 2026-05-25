@@ -1,4 +1,5 @@
 ﻿using Lentis.Api.Models.Dto.Auth;
+using Lentis.Api.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Data;
@@ -43,12 +44,17 @@ public class AuthController : ControllerBase
         if (request.Email != adminEmail)
         {
             _logger.LogWarning(
-                "Failed admin login attempt for {Email}",
-                request.Email
+                "[Audit] Failed admin login attempt for {AdminEmail} from IP {IpAddress}",
+                request.Email,
+                HttpContext.Connection.RemoteIpAddress?.ToString()
             );
-            return Unauthorized(new
+            return Unauthorized(new ApiResponse<object>
             {
-                message = "Invalid email or password."
+                Success = false,
+                Message = "Invalid email or password.",
+                Data = null,
+                Errors = null,
+                TraceId = HttpContext.Items["CorrelationId"]?.ToString()
             });
         }
 
@@ -60,21 +66,26 @@ public class AuthController : ControllerBase
         if (!isValidPassword)
         {
             _logger.LogWarning(
-            "Failed admin password verification for {Email}",
-            request.Email
+                "[Audit] Failed admin password verification for {AdminEmail} from IP {IpAddress}",
+                request.Email,
+                HttpContext.Connection.RemoteIpAddress?.ToString()
             );
-
-            return Unauthorized(new
+            return Unauthorized(new ApiResponse<object>
             {
-                message = "Invalid email or password."
+                Success = false,
+                Message = "Invalid email or password.",
+                Data = null,
+                Errors = null,
+                TraceId = HttpContext.Items["CorrelationId"]?.ToString()
             });
         }
 
         var token = CreateToken(request.Email);
 
         _logger.LogInformation(
-            "Admin login successful for {Email}",
-            request.Email
+            "[Audit] Admin {AdminEmail} logged in successfully from IP {IpAddress}",
+            request.Email,
+            HttpContext.Connection.RemoteIpAddress?.ToString()
         );
 
         Response.Cookies.Append("lentis_admin", token, new CookieOptions

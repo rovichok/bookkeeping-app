@@ -1,4 +1,5 @@
 using Lentis.Api.Data;
+using Lentis.Api.Infrastructure.Middleware;
 using Lentis.Api.Middleware;
 using Lentis.Api.Responses;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -163,10 +164,13 @@ builder.Services.AddRateLimiter(options =>
         context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
         context.HttpContext.Response.ContentType = "application/json";
 
-        await context.HttpContext.Response.WriteAsJsonAsync(new
+        await context.HttpContext.Response.WriteAsJsonAsync(new ApiResponse<object>
         {
-            message = "Too many requests. Please try again later.",
-            statusCode = 429
+            Success = false,
+            Message = "Too many requests. Please try again later.",
+            Data = null,
+            Errors = null,
+            TraceId = context.HttpContext.Items["CorrelationId"]?.ToString()
         }, token);
     };
 });
@@ -239,27 +243,30 @@ app.Logger.LogInformation(
 
 // --- 7. MIDDLEWARE PIPELINE (The Order Matters!) ---
 
-// A. Global Error Handling
+// A. Registers custom class-based middleware to generate, track, or forward unique correlation IDs for distributed request tracing.
+app.UseMiddleware<CorrelationIdMiddleware>();
+
+// B. Global Error Handling
 app.UseMiddleware<ExceptionMiddleware>();
 
-// B. Security Headers (ADD IT HERE)
+// C. Security Headers (ADD IT HERE)
 app.UseMiddleware<SecurityHeadersMiddleware>();
 
-// C. Swagger
+// D. Swagger
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// D. HSTS should only run outside development.
+// E. HSTS should only run outside development.
 //    It tells browsers to use HTTPS only for future requests.
 if (!app.Environment.IsDevelopment())
 {
     app.UseHsts();
 }
 
-// E. Protocol and Routing
+// F. Protocol and Routing
 app.UseHttpsRedirection();
 
 app.Use(async (context, next) =>
@@ -292,21 +299,21 @@ app.Use(async (context, next) =>
 
 app.UseRouting();
 
-// D. CORS
+// G. CORS
 app.UseCors("Frontend");
 
 // Compress HTTP request logs into a single summary event.
 // Captures full endpoint/CORS routing data but executes before auth/rate limits drop requests.
 app.UseSerilogRequestLogging();
 
-// E. Security & Identity
+// H. Security & Identity
 app.UseAuthentication();
 app.UseAuthorization();
 
-// F. Rate Limiting
+// I. Rate Limiting
 app.UseRateLimiter();
 
-// G. Execution
+// J. Execution
 app.MapControllers();
 
 app.MapHealthChecks("/health");

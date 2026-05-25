@@ -14,4 +14,7 @@ public class ApiResponse<T>
     // Optional error details
     // Useful later for validation responses
     public object? Errors { get; set; }
+
+    // Production Tracking: Included in all responses to trace distributed requests
+    public string? TraceId { get; set; }
 }
