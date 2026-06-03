@@ -280,10 +280,12 @@ public class LeadsController : ControllerBase
 
         // 3. Persist down to SQL database
         await _db.SaveChangesAsync();
+
         // Record successful admin lead modifications for audit tracking
         _logger.LogInformation(
-            "Lead {LeadId} updated successfully by admin",
-            id
+            "[Audit] Lead {LeadId} updated by admin from IP {IpAddress}",
+            id,
+            HttpContext.Connection.RemoteIpAddress?.ToString()
         );
 
         // 4. Return the standardized LeadDetailsDto response
@@ -298,7 +300,7 @@ public class LeadsController : ControllerBase
         return Ok(new ApiResponse<LeadDetailsDto>
         {
             Success = true,
-            Message = "Lead retrieved successfully.",
+            Message = "Lead updated successfully.",
             Data = response
         });
     }
@@ -352,14 +354,16 @@ public class LeadsController : ControllerBase
             return NotFound(new ApiResponse<object>
             {
                 Success = false,
-                Message = $"Lead with ID {id} not found."
+                Message = $"Lead with ID {id} not found.",
+                TraceId = HttpContext.Items["CorrelationId"]?.ToString()
             });
         }
 
         // Record destructive admin actions for auditing and diagnostics
         _logger.LogWarning(
-            "Lead {LeadId} deleted by admin",
-            id
+            "[Audit] Lead {LeadId} deleted by admin from IP {IpAddress}",
+            id,
+            HttpContext.Connection.RemoteIpAddress?.ToString()
         );
 
         // Returns a clean 204 No Content success response
