@@ -11,6 +11,7 @@ import AdminLeadsPage from "../pages/admin/AdminLeadsPage";
 import AdminLoginPage from "../pages/admin/AdminLoginPage";
 // Add this line at the top of router.jsx
 import ProtectedRoute from "../components/ProtectedRoute";
+import AdminAuditPage from "../pages/AdminAuditPage";
 
 // createBrowserRouter uses normal browser URLs like /pricing or /contact.
 // This is the routing table for the site.
@@ -63,6 +64,16 @@ const router = createBrowserRouter([
       {
         path: "admin/login",
         element: <AdminLoginPage />,
+      },
+
+      // route: /admin/audit
+      {
+        path: "admin/audit",
+        element: (
+          <ProtectedRoute>
+            <AdminAuditPage />
+          </ProtectedRoute>
+        ),
       },
     ],
   },

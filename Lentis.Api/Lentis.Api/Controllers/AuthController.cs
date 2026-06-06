@@ -1,5 +1,6 @@
 ﻿using Lentis.Api.Models.Dto.Auth;
 using Lentis.Api.Responses;
+using Lentis.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Data;
@@ -18,16 +19,18 @@ public class AuthController : ControllerBase
 {
     private readonly IConfiguration _configuration;
     private readonly ILogger<AuthController> _logger;
+    private readonly IAdminAuditService _auditService; //
 
-    public AuthController(IConfiguration configuration, ILogger<AuthController> logger)
+    public AuthController(IConfiguration configuration, ILogger<AuthController> logger, IAdminAuditService auditService)
     {
         _configuration = configuration;
         _logger = logger;
+        _auditService = auditService; //
     }
 
     [EnableRateLimiting("AdminLoginPolicy")]
     [HttpPost("login")]
-    public IActionResult Login([FromBody] AdminLoginDto request)
+    public async Task<IActionResult> Login([FromBody] AdminLoginDto request)
     {
         var adminEmail = _configuration["AdminCredentials:Email"];
         var adminPasswordHash = _configuration["AdminCredentials:PasswordHash"];
@@ -48,6 +51,13 @@ public class AuthController : ControllerBase
                 request.Email,
                 HttpContext.Connection.RemoteIpAddress?.ToString()
             );
+
+            await _auditService.LogAsync(
+                action: "Failed Login",
+                entityType: "Authentication",
+                performedBy: request.Email,
+                ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString());
+
             return Unauthorized(new ApiResponse<object>
             {
                 Success = false,
@@ -70,6 +80,13 @@ public class AuthController : ControllerBase
                 request.Email,
                 HttpContext.Connection.RemoteIpAddress?.ToString()
             );
+
+            await _auditService.LogAsync(
+                action: "Failed Login",
+                entityType: "Authentication",
+                performedBy: request.Email,
+                ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString());
+
             return Unauthorized(new ApiResponse<object>
             {
                 Success = false,
@@ -97,6 +114,12 @@ public class AuthController : ControllerBase
             Expires = DateTimeOffset.UtcNow.AddHours(2),
             Path = "/"
         });
+
+        await _auditService.LogAsync(
+            action: "Admin Login",
+            entityType: "Authentication",
+            performedBy: request.Email,
+            ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString());
 
         return Ok(new { message = "Logged in" });
     }
@@ -152,7 +175,7 @@ public class AuthController : ControllerBase
 
     // Logout
     [HttpPost("logout")]
-    public IActionResult Logout()
+    public async Task<IActionResult> Logout()
     {
         // Appends a cookie with an expired date to force the browser to delete it
         Response.Cookies.Delete("lentis_admin", new CookieOptions
@@ -163,6 +186,12 @@ public class AuthController : ControllerBase
             Domain = "lentisgroup.com",
             Path = "/" // MUST match the path used when the cookie was created
         });
+
+        await _auditService.LogAsync(
+            action: "Admin Logout",
+            entityType: "Authentication",
+            performedBy: User?.Identity?.Name,
+            ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString());
 
         return Ok(new { message = "Logged out" });
     }

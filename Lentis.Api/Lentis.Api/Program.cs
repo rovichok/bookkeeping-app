@@ -2,6 +2,7 @@ using Lentis.Api.Data;
 using Lentis.Api.Infrastructure.Middleware;
 using Lentis.Api.Middleware;
 using Lentis.Api.Responses;
+using Lentis.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +15,8 @@ using System.Text;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddScoped<IAdminAuditService, AdminAuditService>();
 
 // Configures Serilog as the logging provider, reading settings from appsettings.json and logging to the console.
 builder.Host.UseSerilog((context, configuration) =>
@@ -72,6 +75,8 @@ if (string.IsNullOrWhiteSpace(resendApiToken))
 
 // --- 1. CORE SERVICES ---
 builder.Services.AddControllers();
+
+builder.Services.AddScoped<IAdminAuditService, AdminAuditService>();
 
 // --- CUSTOM VALIDATION RESPONSE NORMALIZATION ---
 // [ApiController] automatically validates DTOs before controller actions run.

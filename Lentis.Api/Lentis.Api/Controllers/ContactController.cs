@@ -1,13 +1,13 @@
 ﻿using Lentis.Api.Data;
 using Lentis.Api.Models;
 using Lentis.Api.Models.Dto.Leads;
+using Lentis.Api.Responses;
+using Lentis.Api.Services;
 using Microsoft.AspNetCore.Authorization;
-
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Resend;
-using Lentis.Api.Responses;
 using System.Linq;
 
 
@@ -18,15 +18,17 @@ namespace Lentis.Api.Controllers;
 [ApiController]
 public class ContactController : ControllerBase
 {
+    private readonly IAdminAuditService _auditService;
     private readonly AppDbContext _db;
     private readonly IResend _resend;
     private readonly ILogger<ContactController> _logger;
 
-    public ContactController(IResend resend, ILogger<ContactController> logger, AppDbContext db)
+    public ContactController(IResend resend, ILogger<ContactController> logger, AppDbContext db, IAdminAuditService auditService)
     {
         _db = db;
         _resend = resend;
         _logger = logger;
+        _auditService = auditService;
     }
 
     [EnableRateLimiting("LeadSubmitPolicy")]
@@ -65,6 +67,20 @@ public class ContactController : ControllerBase
 
         _db.Leads.Add(lead);
         await _db.SaveChangesAsync();
+
+        await _auditService.LogAsync(
+            action: "Lead Created",
+            entityType: "Lead",
+            entityId: lead.Id,
+            performedBy: "Public Contact Form",
+            ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString(),
+            details: new
+            {
+                lead.Id,
+                lead.Name,
+                lead.Email,
+                lead.Message
+            });
 
         // Record successful lead creation for audit and diagnostics
         _logger.LogInformation(
@@ -134,13 +150,15 @@ public class ContactController : ControllerBase
 [Route("api/[controller]")]
 public class LeadsController : ControllerBase
 {
+    private readonly IAdminAuditService _auditService; //
     private readonly AppDbContext _db;
     private readonly ILogger<LeadsController> _logger;
 
-    public LeadsController(AppDbContext db, ILogger<LeadsController> logger)
+    public LeadsController(AppDbContext db, ILogger<LeadsController> logger, IAdminAuditService auditService)
     {
         _db = db;
         _logger = logger;
+        _auditService = auditService; //
     }
 
     [HttpGet]
@@ -273,13 +291,42 @@ public class LeadsController : ControllerBase
             });
         }
 
-        // 2. Map safe fields from incoming UpdateLeadDto
+        // 2. Capture before snapshot for audit history
+        var before = new
+        {
+            lead.Id,
+            lead.Name,
+            lead.Email,
+            lead.Message
+        };
+
+        // 3. Map safe fields from incoming UpdateLeadDto
         lead.Name = dto.Name.Trim();
         lead.Email = dto.Email.Trim();
         lead.Message = dto.Message.Trim();
 
-        // 3. Persist down to SQL database
+        // 4. Persist down to Postgres database
         await _db.SaveChangesAsync();
+
+        // 5. Write audit record
+        await _auditService.LogAsync(
+            action: "Lead Updated",
+            entityType: "Lead",
+            entityId: lead.Id,
+            performedBy: "Admin",
+            ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString(),
+            details: new
+            {
+                Before = before,
+                After = new
+                {
+                    lead.Id,
+                    lead.Name,
+                    lead.Email,
+                    lead.Message
+                }
+                
+            });
 
         // Record successful admin lead modifications for audit tracking
         _logger.LogInformation(
@@ -288,7 +335,7 @@ public class LeadsController : ControllerBase
             HttpContext.Connection.RemoteIpAddress?.ToString()
         );
 
-        // 4. Return the standardized LeadDetailsDto response
+        // 6. Return the standardized LeadDetailsDto response
         var response = new LeadDetailsDto(
             lead.Id,
             lead.Name,
@@ -341,15 +388,9 @@ public class LeadsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteLead(int id)
     {
+        var lead = await _db.Leads.FindAsync(id);
 
-        // Executes a single DELETE query directly in the database.
-        // This permanently wipes the row instantly without loading it into server memory first.
-        int rowsAffected = await _db.Leads
-            .Where(l => l.Id == id)
-            .ExecuteDeleteAsync(); // Requires EF Core 7 or higher
-
-        // If no rows were changed, the ID did not exist in the database
-        if (rowsAffected == 0)
+        if (lead == null)
         {
             return NotFound(new ApiResponse<object>
             {
@@ -359,14 +400,31 @@ public class LeadsController : ControllerBase
             });
         }
 
-        // Record destructive admin actions for auditing and diagnostics
+        var deletedLead = new
+        {
+            lead.Id,
+            lead.Name,
+            lead.Email,
+            lead.Message
+        };
+
+        _db.Leads.Remove(lead);
+        await _db.SaveChangesAsync();
+
+        await _auditService.LogAsync(
+            action: "Lead Deleted",
+            entityType: "Lead",
+            entityId: id,
+            performedBy: "Admin",
+            ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString(),
+            details: deletedLead);
+
         _logger.LogWarning(
             "[Audit] Lead {LeadId} deleted by admin from IP {IpAddress}",
             id,
             HttpContext.Connection.RemoteIpAddress?.ToString()
         );
 
-        // Returns a clean 204 No Content success response
         return NoContent();
     }
 

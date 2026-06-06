@@ -11,5 +11,6 @@ namespace Lentis.Api.Data
         }
 
         public DbSet<Lead> Leads => Set<Lead>();
+        public DbSet<AdminAuditLog> AdminAuditLogs => Set<AdminAuditLog>();
     }
 }
