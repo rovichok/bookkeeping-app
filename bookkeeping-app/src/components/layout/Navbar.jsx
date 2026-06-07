@@ -26,19 +26,23 @@ export default function Navbar() {
           <NavLink to="/services/cleanup">Cleanup</NavLink>
           <NavLink to="/services/monthly-bookkeeping">Monthly</NavLink>
           <NavLink to="/services/quickbooks-support">QuickBooks</NavLink>
+
+          <NavLink to="/services/automation-services">
+            Automation Services
+          </NavLink>
+
           <NavLink to="/contact" className="nav-cta">
             Contact
           </NavLink>
         </nav>
 
         <div className="nav-auth">
-          {/* Conditional rendering: only show logout if the cookie check passed */}
-          {isAuthenticated ? (
+          <NavLink to="/admin/leads">Admin</NavLink>
+
+          {isAuthenticated && (
             <button type="button" onClick={handleLogout}>
               Logout
             </button>
-          ) : (
-            <NavLink to="/admin/login">Admin</NavLink>
           )}
         </div>
       </div>
