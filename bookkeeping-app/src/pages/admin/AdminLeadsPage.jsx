@@ -1,5 +1,5 @@
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 
 import SectionHeader from "../../components/ui/SectionHeader";
 import { useAuth } from "../../context/AuthContext";
@@ -281,6 +281,18 @@ export default function AdminLeadsPage() {
         />
 
         <AdminStatsCards totalCount={totalCount} leads={leads} />
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginBottom: "1rem",
+          }}
+        >
+          <Link to="/admin/audit" className="admin-secondary-button">
+            Audit History
+          </Link>
+        </div>
 
         <div className="admin-toolbar">
           <input
