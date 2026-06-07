@@ -37,7 +37,12 @@ export default function Navbar() {
         </nav>
 
         <div className="nav-auth">
-          <NavLink to="/admin/leads">Admin</NavLink>
+          <a
+            href="https://admin.lentisgroup.com/admin/leads"
+            rel="noopener noreferrer"
+          >
+            Admin
+          </a>
 
           {isAuthenticated && (
             <button type="button" onClick={handleLogout}>
