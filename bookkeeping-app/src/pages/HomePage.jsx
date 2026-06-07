@@ -1,7 +1,9 @@
+import AutomationPreview from "../components/sections/AutomationPreview";
 import Hero from "../components/sections/Hero";
 import TrustSection from "../components/sections/TrustSection";
 import ServicesPreview from "../components/sections/ServicesPreview";
 import ProcessSection from "../components/sections/ProcessSection";
+import FaqSection from "../components/sections/FaqSection";
 import CTASection from "../components/ui/CTASection";
 
 // HomePage is just composition.
@@ -12,7 +14,11 @@ export default function HomePage() {
       <Hero />
       <TrustSection />
       <ServicesPreview />
+
+      <AutomationPreview />
+
       <ProcessSection />
+      <FaqSection />
       <CTASection
         title="Ready to stop stressing about your bookkeeping?"
         text="Get organized books, clearer financial records, and support that helps you stay on track."
