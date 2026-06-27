@@ -7,6 +7,7 @@ import ContactPage from "../pages/ContactPage";
 import CleanupPage from "../pages/services/CleanupPage";
 import MonthlyBookkeepingPage from "../pages/services/MonthlyBookkeepingPage";
 import QuickBooksSupportPage from "../pages/services/QuickBooksSupportPage";
+import AutomationServicesPage from "../pages/services/AutomationServicesPage";
 import AdminLeadsPage from "../pages/admin/AdminLeadsPage";
 import AdminLoginPage from "../pages/admin/AdminLoginPage";
 // Add this line at the top of router.jsx
@@ -74,6 +75,12 @@ const router = createBrowserRouter([
             <AdminAuditPage />
           </ProtectedRoute>
         ),
+      },
+
+      // route: /services/automation-services
+      {
+        path: "services/automation-services",
+        element: <AutomationServicesPage />,
       },
     ],
   },

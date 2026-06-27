@@ -5,33 +5,32 @@ export default function TrustSection() {
     <section className="section">
       <div className="container">
         <SectionHeader
-          eyebrow="Why clients choose Lentis"
-          title="Bookkeeping is not just about numbers. It is about clarity and confidence."
-          text="When your books are accurate and up to date, it becomes easier to make decisions, stay organized, and move forward without second-guessing your finances."
+          eyebrow="Why businesses choose Lentis"
+          title="Better bookkeeping, better systems, and better visibility."
+          text="Lentis combines bookkeeping expertise, QuickBooks support, and process improvement to help businesses stay organized, reduce administrative burden, and make more confident decisions."
         />
 
-        {/* 3-column value explanation area */}
         <div className="three-col-grid">
           <article className="card lentis-soft-card">
-            <h3>Accurate and organized records</h3>
+            <h3>Reliable Financial Records</h3>
             <p>
-              Books that are cleaned up, structured properly, and easier to rely
-              on.
+              Cleaner books, reconciled accounts, and financial information you
+              can trust.
             </p>
           </article>
 
           <article className="card lentis-soft-card">
-            <h3>Less stress and uncertainty</h3>
+            <h3>Improved Processes</h3>
             <p>
-              Stop wondering if your bookkeeping is wrong, behind, or
-              inconsistent.
+              Better workflows and less manual effort so your team can focus on
+              higher-value work.
             </p>
           </article>
 
           <article className="card lentis-soft-card">
-            <h3>Clearer financial visibility</h3>
+            <h3>Clearer Business Visibility</h3>
             <p>
-              Understand your numbers so you can make better, more confident
+              Better reporting and operational insight to support more informed
               decisions.
             </p>
           </article>

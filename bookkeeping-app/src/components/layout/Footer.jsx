@@ -5,22 +5,26 @@ export default function Footer() {
     <footer className="site-footer">
       <div className="container footer-grid">
         <div>
-          <h2>Lentis</h2>
+          <h2>Lentis Group</h2>
+
           <p>
-            Bookkeeping cleanup, monthly support, and QuickBooks help for small
-            businesses.
+            Bookkeeping, QuickBooks support, workflow improvement, and business
+            systems solutions for small businesses.
           </p>
         </div>
 
         <div>
           <h3>Pages</h3>
+
           <ul className="footer-list">
             <li>
               <Link to="/">Home</Link>
             </li>
+
             <li>
               <Link to="/pricing">Pricing</Link>
             </li>
+
             <li>
               <Link to="/contact">Contact</Link>
             </li>
@@ -29,17 +33,40 @@ export default function Footer() {
 
         <div>
           <h3>Services</h3>
+
           <ul className="footer-list">
             <li>
               <Link to="/services/cleanup">Bookkeeping Cleanup</Link>
             </li>
+
             <li>
               <Link to="/services/monthly-bookkeeping">
                 Monthly Bookkeeping
               </Link>
             </li>
+
             <li>
               <Link to="/services/quickbooks-support">QuickBooks Support</Link>
+            </li>
+
+            <li>
+              <Link to="/services/automation-services">
+                Workflow Automation
+              </Link>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h3>Get Started</h3>
+
+          <ul className="footer-list">
+            <li>
+              <Link to="/contact">Schedule a Consultation</Link>
+            </li>
+
+            <li>
+              <Link to="/services/cleanup">Cleanup Assessment</Link>
             </li>
           </ul>
         </div>

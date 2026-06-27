@@ -6,22 +6,25 @@ export default function Hero() {
       <div className="container hero-grid">
         {/* Left side: main marketing message */}
         <div>
-          <p className="eyebrow">Cleanup + Ongoing Support</p>
+          <p className="eyebrow">
+            Bookkeeping • QuickBooks • Workflow Improvement
+          </p>
 
           <h1>
-            Behind on your books? We’ll clean them up and keep them that way.
+            Helping small businesses improve financial visibility and
+            operational efficiency.
           </h1>
 
           <p className="hero-text">
-            Lentis helps small businesses clean up messy bookkeeping, stay
-            organized month to month, and gain clearer financial visibility
-            without the stress.
+            Lentis Group provides bookkeeping, QuickBooks support, and workflow
+            improvement services that help businesses stay organized, reduce
+            administrative burden, and make better decisions with confidence.
           </p>
 
           {/* Main CTA buttons */}
           <div className="hero-actions">
             <Button className="primary-btn lentis-hover-lift" to="/contact">
-              Get a Free Consultation
+              Schedule a Consultation
             </Button>
             <Button
               className="primary-btn lentis-hover-lift"
@@ -36,11 +39,13 @@ export default function Hero() {
         {/* Right side: visual support card instead of an image for now */}
         <div className="hero-card">
           <div className="placeholder-card lentis-soft-card lentis-fade-up">
-            <h3>What Lentis helps with</h3>
+            <h3>How Lentis Supports Businesses</h3>
+
             <ul>
-              <li>Cleanup and catch-up bookkeeping</li>
-              <li>Monthly reconciliation and reporting</li>
-              <li>QuickBooks setup and troubleshooting</li>
+              <li>Bookkeeping cleanup and catch-up projects</li>
+              <li>Monthly bookkeeping support</li>
+              <li>QuickBooks setup and workflow improvement</li>
+              <li>Process automation and reporting solutions</li>
             </ul>
           </div>
         </div>

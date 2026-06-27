@@ -6,32 +6,33 @@ export default function ProcessSection() {
       <div className="container">
         <SectionHeader
           eyebrow="How it works"
-          title="A simple, low-stress process"
-          text="We keep the process clear so you always know what happens next and can move forward with confidence."
+          title="A practical process focused on results"
+          text="Whether you need bookkeeping support, QuickBooks guidance, or workflow improvement, we start by understanding your current situation and identifying the most valuable next steps."
         />
 
         <div className="three-col-grid">
           <article className="card lentis-soft-card">
-            <h3>1. Consultation</h3>
+            <h3>1. Assess</h3>
             <p>
-              We review your bookkeeping situation and identify the most
-              important issues first.
+              We review your bookkeeping, systems, workflows, and operational
+              challenges to understand where support is needed most.
             </p>
           </article>
 
           <article className="card lentis-soft-card">
-            <h3>2. Cleanup or setup</h3>
+            <h3>2. Improve</h3>
             <p>
-              We organize your books, correct issues, and create a cleaner, more
-              reliable starting point.
+              We organize records, address issues, improve workflows, and create
+              a more reliable foundation for your business.
             </p>
           </article>
 
           <article className="card lentis-soft-card">
-            <h3>3. Ongoing support</h3>
+            <h3>3. Support</h3>
             <p>
-              We help keep your bookkeeping accurate, current, and easier to
-              manage moving forward.
+              We help maintain consistency through ongoing bookkeeping,
+              QuickBooks support, and process improvement as your business
+              grows.
             </p>
           </article>
         </div>

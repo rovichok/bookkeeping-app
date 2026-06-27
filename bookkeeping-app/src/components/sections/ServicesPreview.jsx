@@ -7,8 +7,8 @@ export default function ServicesPreview() {
       <div className="container">
         <SectionHeader
           eyebrow="Services"
-          title="Support built for businesses that need cleanup and consistency"
-          text="Start with the help you need now, then move into ongoing support with a clearer financial foundation."
+          title="Bookkeeping, QuickBooks, and workflow improvement services"
+          text="Whether you need bookkeeping cleanup, ongoing support, QuickBooks guidance, or process improvement, Lentis helps businesses build stronger operational foundations."
         />
 
         <div className="three-col-grid">
@@ -51,6 +51,23 @@ export default function ServicesPreview() {
 
             <Link
               to="/services/quickbooks-support"
+              className="text-link lentis-link-underline"
+            >
+              Learn more
+            </Link>
+          </article>
+
+          <article className="card lentis-soft-card">
+            <h3>Workflow Automation</h3>
+
+            <p>
+              Reduce repetitive administrative work and improve visibility
+              through workflow improvement, reporting solutions, and business
+              process automation.
+            </p>
+
+            <Link
+              to="/services/automation-services"
               className="text-link lentis-link-underline"
             >
               Learn more
