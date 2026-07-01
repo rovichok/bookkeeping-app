@@ -1,10 +1,32 @@
+import SEO from "../../components/seo/SEO";
 import CTASection from "../../components/ui/CTASection";
 import SectionHeader from "../../components/ui/SectionHeader";
 import Button from "../../components/ui/Button";
 
+const quickBooksSchema = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: "QuickBooks Support",
+  serviceType: "QuickBooks Support",
+  provider: {
+    "@type": "ProfessionalService",
+    name: "Lentis Group",
+    url: "https://lentisgroup.com",
+  },
+  areaServed: "United States",
+  description:
+    "QuickBooks setup, troubleshooting, cleanup, and workflow improvement services for small businesses.",
+};
+
 export default function QuickBooksSupportPage() {
   return (
     <>
+      <SEO
+        title="QuickBooks Support Services | Lentis Group"
+        description="QuickBooks support for small businesses, including setup help, cleanup support, workflow improvement, and troubleshooting."
+        path="/services/quickbooks-support"
+        schema={quickBooksSchema}
+      />
       {/* HERO */}
       <section className="page-hero">
         <div className="container narrow">

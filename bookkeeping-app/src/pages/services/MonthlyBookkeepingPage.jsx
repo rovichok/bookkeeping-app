@@ -1,10 +1,32 @@
+import SEO from "../../components/seo/SEO";
 import CTASection from "../../components/ui/CTASection";
 import SectionHeader from "../../components/ui/SectionHeader";
 import Button from "../../components/ui/Button";
 
+const monthlySchema = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: "Monthly Bookkeeping",
+  serviceType: "Monthly Bookkeeping",
+  provider: {
+    "@type": "ProfessionalService",
+    name: "Lentis Group",
+    url: "https://lentisgroup.com",
+  },
+  areaServed: "United States",
+  description:
+    "Reliable monthly bookkeeping services that help small businesses maintain accurate financial records and reporting.",
+};
+
 export default function MonthlyBookkeepingPage() {
   return (
     <>
+      <SEO
+        title="Monthly Bookkeeping Services | Lentis Group"
+        description="Monthly bookkeeping services to help small businesses stay organized with transaction review, reconciliations, and clearer financial reporting."
+        path="/services/monthly-bookkeeping"
+        schema={monthlySchema}
+      />
       {/* HERO */}
       <section className="page-hero">
         <div className="container narrow">
