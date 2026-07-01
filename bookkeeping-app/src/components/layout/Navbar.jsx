@@ -26,6 +26,9 @@ export default function Navbar() {
           <NavLink to="/services/cleanup">Cleanup</NavLink>
           <NavLink to="/services/monthly-bookkeeping">Monthly</NavLink>
           <NavLink to="/services/quickbooks-support">QuickBooks</NavLink>
+          <NavLink to="/services/automation-services">
+            Workflow Automation
+          </NavLink>
           <NavLink to="/contact" className="nav-cta">
             Contact
           </NavLink>

@@ -41,6 +41,11 @@ export default function Footer() {
             <li>
               <Link to="/services/quickbooks-support">QuickBooks Support</Link>
             </li>
+            <li>
+              <Link to="/services/automation-services">
+                Workflow Automation
+              </Link>
+            </li>
           </ul>
         </div>
       </div>

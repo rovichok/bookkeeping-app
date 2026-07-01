@@ -1,10 +1,32 @@
+import SEO from "../../components/seo/SEO";
 import SectionHeader from "../../components/ui/SectionHeader";
 import CTASection from "../../components/ui/CTASection";
 import Button from "../../components/ui/Button";
 
+const cleanupSchema = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: "Bookkeeping Cleanup",
+  serviceType: "Bookkeeping Cleanup",
+  provider: {
+    "@type": "ProfessionalService",
+    name: "Lentis Group",
+    url: "https://lentisgroup.com",
+  },
+  areaServed: "United States",
+  description:
+    "Professional bookkeeping cleanup services for small businesses to correct financial records, reconcile accounts, and restore confidence in reporting.",
+};
+
 export default function CleanupPage() {
   return (
     <>
+      <SEO
+        title="Bookkeeping Cleanup Services | Lentis Group"
+        description="Bookkeeping cleanup services to help small businesses catch up, reconcile accounts, correct messy records, and regain confidence in their financial reports."
+        path="/services/cleanup"
+        schema={cleanupSchema}
+      />
       {/* HERO */}
       <section className="page-hero">
         <div className="container narrow">
